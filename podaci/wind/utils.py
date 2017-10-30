@@ -25,6 +25,9 @@ def dict_2_str(d):
         final_str += str(key) + '=' + str(value) + ';'
     return final_str[:-1]
 
+def date_format_convert(d):
+    return d[:4] + '-' + d[4:6] + '-' + d[6:]
+
 wind_symbol_2_code = np.frompyfunc(wind_symbol_2_code,1,1)
 code_2_wind_symbol = np.frompyfunc(code_2_wind_symbol,1,1)
 

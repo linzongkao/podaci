@@ -1,0 +1,5 @@
+# wind DB sync setting
+server:172.24.181.55
+user:fsb
+password:fsb
+db:wind_db
