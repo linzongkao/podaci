@@ -15,7 +15,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import pandas as pd
 
-settings_path = 'G:\Work_ldh\Backtest\podaci\podaci\wind'
+settings_path = os.path.dirname(__file__)
+
 with open(os.path.join(settings_path,'etc.yaml'),'r') as f:
     settings = yaml.load(f)
 
@@ -53,3 +54,9 @@ def get_industry_symbols(industry_name = None,industry_level = None):
     '''%(industry_level * 2 , industry_level * 2,industry_level,industry_name)
     df = pd.read_sql(sql,db_engine)
     return df
+
+def get_trade_data(universe,start_date,end_date):
+    '''
+    获取前复权行情数据.
+    '''
+    pass
