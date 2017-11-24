@@ -7,12 +7,16 @@ Created on Fri Nov 03 15:46:20 2017
 
 # calendar.py
 
+import os
 import datetime as dt
 import pandas as pd
 
+current_path = os.path.dirname(__file__)
+current_path = os.path.join(current_path,'calendar.csv')
+
 class Calendar():
     def __init__(self):
-        self.calendar = pd.read_csv('calendar.csv',parse_dates = ['date'],
+        self.calendar = pd.read_csv(current_path,parse_dates = ['date'],
                                     usecols = ['date'])
         
     def roll_date(self,date,n):
@@ -36,6 +40,15 @@ class Calendar():
         idx += n
         return self.calendar['date'].iloc[idx].to_pydatetime()
     
+    def get_latest_tradedate(self):
+        '''
+        获取日历上最新的日期。
+        
+        Returns
+        --------
+        datetime
+        '''
+        return self.calendar['date'].iloc[-1].to_pydatetime()
     
     
         
