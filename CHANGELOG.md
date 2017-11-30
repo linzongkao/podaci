@@ -1,3 +1,7 @@
+# 2017-11-30
+1. 在wind api中添加日期函数get_tdays
+2. 在wind中添加基于wind api的日历对象,提供日历上的日期滑动
+
 # 2017-11-24
 1. 添加了支持vectra的data_source(数据来源:国信总部数据库) 
 

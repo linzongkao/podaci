@@ -7,11 +7,12 @@ Created on Thu Oct 12 15:53:38 2017
 
 # wind.py
 import pandas as pd
-from WindPy import *
-from utils import (wind_symbol_2_code,code_2_wind_symbol,
+from WindPy import w
+from utils import (code_2_wind_symbol,
                    dict_2_str,date_format_convert)
 
 w.start()
+
 def get_wss(universe,factors,if_convert = False,**options):
     '''
     获取万德多维数据。
@@ -22,12 +23,10 @@ def get_wss(universe,factors,if_convert = False,**options):
         list ['600340','000001']
     factors
         'pe_ttm,pb_mrq'
-    trade_date
-        '20171011'
     if_convert
         是否将universe转换成wind代码,默认为False,仅支持沪深股票
     options
-        其他参数
+        其他参数,如tradeDate = '20171009'
         
     Returns
     --------
@@ -103,10 +102,32 @@ def get_wsd(universe,factors,start_date,end_date,if_convert = False,**options):
         df = pd.DataFrame(data.Data,columns = data.Times,index = data.Codes).T
     return df
 
+def get_tdays(start_date,end_date,**options):
+    '''
+    获取交易日历序列。
+    
+    Parameters
+    ---------------
+    start_date
+        '20101001'
+    end_date
+        '20171021'
+    options
+        其他参数
+        
+    Returns
+    --------
+    Series
+        Datetime64,ASC
+    '''
+    options = dict_2_str(options)
+    start_date = date_format_convert(start_date)
+    end_date = date_format_convert(end_date) 
+    
+    t_days = w.tdays(start_date, end_date, options)
+    t_days = pd.Series(t_days.Data[0])
+    return t_days
+
 if __name__ == '__main__':
-    universe = ['000001.SZ','000011.SZ']
-    factors = 'dma'
-    start_date = '20151011'
-    end_date = '20151216'
-    data = get_wsd(universe,'dma',start_date,end_date,False,Period = 'M')
+    a = get_tdays('20010101','20150101')
     
