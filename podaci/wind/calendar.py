@@ -66,11 +66,8 @@ class Calendar():
             pass
         
         if years:
-            pass
-    
+            pass    
             
-        
-        
 if __name__ == '__main__':
     a = Calendar('20010101','20171001')
     

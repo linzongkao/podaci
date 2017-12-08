@@ -11,7 +11,7 @@ import pandas as pd
 from vectra.constants import EASY_MODE,HARD_MODE
 from vectra.interface import AbstractDataSource
 from database_engine import DatabaseEngine
-from sqls import SQL_GET_TRADING_DATA
+from sqls import SQL_GET_TRADING_DATA,SQL_GET_CALENDAR
 from utils import func_1,func_2
 
 #%% 连接数据库
@@ -32,6 +32,8 @@ class MixedDataSource(AbstractDataSource):
         self.end_date = end_date
         self.data_mode = data_mode
         
+        self.calendar = pd.read_sql(SQL_GET_CALENDAR%(self.start_date,
+                                                       self.end_date),engine)
         if self.data_mode == EASY_MODE:
             self.data = pd.read_sql(SQL_GET_TRADING_DATA%("("+ str(self.universe)[1:-1] + ")",
                                                           self.start_date,self.end_date),
@@ -59,6 +61,7 @@ class MixedDataSource(AbstractDataSource):
         for col in self.data_pivoted.columns.levels[0]:
             self.data_dict[col] = self.data_pivoted[col].values
         self.data_dict['trade_date'] = self.data_pivoted.index.to_pydatetime()
+        
         
     def get_attr(self,universe,start_date,end_date,frequency,data_mode):
         '''
@@ -108,7 +111,7 @@ class MixedDataSource(AbstractDataSource):
     		list 
             [datetime]
         '''
-        return pd.Index(self.data['trade_date'].sort_values().unique()).to_pydatetime()
+        return pd.Index(self.calendar['trade_date'].sort_values().unique()).to_pydatetime()
     
     def get_trade_status(self,universe,start_date,end_date):
         '''

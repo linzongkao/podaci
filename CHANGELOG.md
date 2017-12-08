@@ -1,3 +1,9 @@
+# 2017-12-08
+1. 新增万德宏观数据接口get_edb
+
+# 2017-12-01
+1. 修正了data_source/mixed_source中获取交易日的方法
+
 # 2017-11-30
 1. 在wind api中添加日期函数get_tdays
 2. 在wind中添加基于wind api的日历对象,提供日历上的日期滑动

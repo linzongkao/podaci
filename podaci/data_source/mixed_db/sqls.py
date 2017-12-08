@@ -27,3 +27,12 @@ WHERE TradingCode IN %s
 AND TradingDay >= '%s'
 AND TradingDay <= '%s'
 '''
+
+SQL_GET_CALENDAR = '''
+SELECT TradingDay as trade_date
+FROM TradingDate
+WHERE TradingDay >= '%s'
+AND TradingDay <= '%s'
+AND IsTradingDay = 1
+AND Exchange = 'SS'
+'''

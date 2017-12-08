@@ -128,6 +128,43 @@ def get_tdays(start_date,end_date,**options):
     t_days = pd.Series(t_days.Data[0])
     return t_days
 
+
+def get_edb(idx_universe,start_date,end_date,names = None,**options):
+    '''
+    获取经济数据。
+    
+    Parameters
+    ------------
+    idx_universe
+        经济指标代码
+    start_date
+        '20160101'
+    end_date
+        '20170101'
+    names
+        list of str,列别名,默认为None
+    options
+        其他参数
+        
+    Returns
+    --------
+    DataFrame
+    
+    Notes
+    ------
+    names若不为None,则必须与idx_universe等长对应
+    '''
+    assert len(names) == len(idx_universe)
+    options = dict_2_str(options)
+    start_date = date_format_convert(start_date)
+    end_date = date_format_convert(end_date) 
+
+    idx_universe = ','.join(idx_universe)
+    edb = w.edb(idx_universe,start_date,end_date,options)
+    
+    df = pd.DataFrame(edb.Data,columns = edb.Times,index = names).T
+    return df
+    
 if __name__ == '__main__':
-    a = get_tdays('20010101','20150101')
+    data_y = get_edb(YEARLY_CODES,'19910101','20170101',names = YEARLY_NAMES)
     
