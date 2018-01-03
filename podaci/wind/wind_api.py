@@ -57,7 +57,8 @@ def get_stocks_factors_with_industry(universe,factors,**options):
     data = data.join(index_data,on = 'INDEXCODE_WIND')
     return data
 
-def get_wsd(universe,factors,start_date,end_date,if_convert = False,**options):
+def get_wsd(universe,factors,start_date,end_date,names = None,
+            if_convert = False,**options):
     '''
     获取万德日期序列数据。
     
@@ -73,6 +74,8 @@ def get_wsd(universe,factors,start_date,end_date,if_convert = False,**options):
         '20171021'
     if_convert
         是否将universe转换成wind代码,默认为False,仅支持沪深股票
+    names
+        list of str,列别名,默认为None,仅对单标的多因素
     options
         其他参数
         
@@ -83,7 +86,7 @@ def get_wsd(universe,factors,start_date,end_date,if_convert = False,**options):
     Notes
     ----------
     universe与factors最多有一个是多维。
-    '''
+    '''        
     options = dict_2_str(options)
     start_date = date_format_convert(start_date)
     end_date = date_format_convert(end_date)
@@ -97,7 +100,10 @@ def get_wsd(universe,factors,start_date,end_date,if_convert = False,**options):
     data = w.wsd(universe_wind,factors,start_date,end_date,options)
 
     if len(universe) == 1:
-        df = pd.DataFrame(data.Data,columns = data.Times,index = data.Fields).T
+        if names is not None:
+            df = pd.DataFrame(data.Data,columns = data.Times,index = names).T
+        else:
+            df = pd.DataFrame(data.Data,columns = data.Times,index = data.Fields).T
     else:
         df = pd.DataFrame(data.Data,columns = data.Times,index = data.Codes).T
     return df
