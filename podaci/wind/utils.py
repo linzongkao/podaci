@@ -13,7 +13,7 @@ def wind_symbol_2_code(wind_symbol):
     return wind_symbol[:6]
 
 def code_2_wind_symbol(code):
-    if code[0] == '6':
+    if code[0] in ['5','6']:
         wind_symbol = code + '.SH'
     else:
         wind_symbol = code + '.SZ'

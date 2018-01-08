@@ -171,6 +171,32 @@ def get_edb(idx_universe,start_date,end_date,names = None,**options):
     df = pd.DataFrame(edb.Data,columns = edb.Times,index = names).T
     return df
     
+def get_wsq(universe,if_convert = False):
+    '''
+    实时行情快照.
+    
+    Parameters
+    -----------
+    universe
+        list,标的代码
+    if_convert
+        是否将代码转换成万德格式
+        
+    Returns
+    --------
+    Series
+        index 万德代码, name 快照时间.
+    '''
+    if if_convert:
+        universe_wind = code_2_wind_symbol(universe)
+        universe_wind = ','.join(universe_wind)
+    else:
+        universe_wind = ','.join(universe)
+        
+    data = w.wsq(universe_wind,'rt_last')
+    data = pd.DataFrame(data.Data,index = data.Times,columns = data.Codes).T
+    return data[data.columns[0]]
+
 if __name__ == '__main__':
-    data_y = get_edb(YEARLY_CODES,'19910101','20170101',names = YEARLY_NAMES)
+    data = get_wsq(['600340.SH','159924.SZ'])
     
