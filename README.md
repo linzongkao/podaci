@@ -14,6 +14,7 @@ Mainly to make wind api more eaily used.
 ## data_source
 To support vector. And now is made up by:
 1. Guosen local database
+2. Execel format files
 
 ## tsdatabase
 To build personal database and maintain it anywhere anyplace, and the only necssity is the Internet.
