@@ -26,7 +26,9 @@ class DiskDataSource(AbstractDataSource):
     def _handle_data(self):
         self.data = pd.read_excel(self.file_path,
                                   parse_dates = True,
+                                  index_col = 'trade_date',
                                   dtype = {'trade_code':str})
+        
         # self.data['trade_date'] = pd.to_datetime(self.data['trade_date'],
         #        yearfirst = True)
         self.data['trade_date'] = self.data.index.to_pydatetime()
@@ -117,7 +119,8 @@ class DiskDataSource(AbstractDataSource):
                              columns = ['trade_code'],
                              fill_value = 0.0)
         tmp = tmp['open_price']
-        tmp = tmp.loc[tmp.index == self.trade_date]
+        tmp = tmp.loc[(tmp.index <= self.trade_date[-1]) & \
+                      (tmp.index >= self.trade_date[0])]
         tmp[tmp > 0] = 1.0
         tmp.index = tmp.index.to_pydatetime()
         return tmp

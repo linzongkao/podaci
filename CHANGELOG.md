@@ -1,3 +1,6 @@
+# 2018-03-08
+1. 修正DiskDataSource读取时的问题
+
 # 2018-01-23
 1. 增加数据源disk_source,支持vectra的excel数据源
 

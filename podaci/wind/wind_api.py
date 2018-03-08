@@ -13,7 +13,7 @@ from utils import (code_2_wind_symbol,
 
 w.start()
 
-def get_wss(universe,factors,if_convert = False,**options):
+def get_wss(universe,factors,if_convert = False,names = None,**options):
     '''
     获取万德多维数据。
     
@@ -25,6 +25,8 @@ def get_wss(universe,factors,if_convert = False,**options):
         'pe_ttm,pb_mrq'
     if_convert
         是否将universe转换成wind代码,默认为False,仅支持沪深股票
+    names
+        list of str,列别名,默认为None
     options
         其他参数,如tradeDate = '20171009'
         
@@ -33,13 +35,22 @@ def get_wss(universe,factors,if_convert = False,**options):
     DataFrame    
     '''
     options = dict_2_str(options)
+    
+    if names is not None:
+        assert len(names) == len(factors.split(','))
+        
     if if_convert:
         universe_wind = code_2_wind_symbol(universe)
         universe_wind = ','.join(universe_wind)
     else:
         universe_wind = ','.join(universe)
     data = w.wss(universe_wind,factors,options)
-    df = pd.DataFrame(data.Data,index = data.Fields,columns = universe).T
+    
+    if names is not None:
+        df = pd.DataFrame(data.Data,index = names,columns = universe).T
+    else:
+        df = pd.DataFrame(data.Data,index = data.Fields,columns = universe).T
+        
     return df
     
 
@@ -86,7 +97,8 @@ def get_wsd(universe,factors,start_date,end_date,names = None,
     Notes
     ----------
     universe与factors最多有一个是多维。
-    '''        
+    '''       
+    
     options = dict_2_str(options)
     start_date = date_format_convert(start_date)
     end_date = date_format_convert(end_date)
