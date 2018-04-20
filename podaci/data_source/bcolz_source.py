@@ -1,18 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Jan 23 15:30:32 2018
+Created on Mon Mar 26 09:11:17 2018
 
 @author: ldh
-
-让vectra支持excel数据源。
 """
 
-# disk_source.py
 import numpy as np
 import pandas as pd
+import bcolz
 from vectra.interface import AbstractDataSource
 
-class DiskDataSource(AbstractDataSource):
+class BcolzDataSource(AbstractDataSource):
     
     def __init__(self,config):
         self.config = config
@@ -23,23 +21,22 @@ class DiskDataSource(AbstractDataSource):
         self._handle_data()
         
     def _handle_data(self):
-        self.data = pd.read_excel(self.file_path,
-                                  parse_dates = True,
-                                  index_col = 'trade_date',
-                                  dtype = {'trade_code':str})
-        
-        self.data['trade_date'] = self.data.index.to_pydatetime()
-        self.trade_date = self.data['trade_date']
-        self.trade_date = self.trade_date.unique()
+        self.data = bcolz.open(self.file_path,mode = 'r')
+        self.data = self.data.todataframe()
+        self.trade_date = self.data['trade_date'].unique()
+        self.data = self.data.loc[(self.data['trade_date'] >= self.start_date) & \
+                                  (self.data['trade_date'] <= self.end_date)]
+        self.data.loc[:,'trade_date'] = pd.to_datetime(self.data['trade_date'])
         self.trade_date.sort() 
         self.trade_date = pd.to_datetime(self.trade_date)
-        self.trade_date = self.trade_date[(self.trade_date >= self.start_date) & \
-                                  (self.trade_date <= self.end_date)]
+        self.trade_date = self.trade_date[(self.data['trade_date'] >= self.start_date) & \
+                                  (self.data['trade_date'] <= self.end_date)]
         self.target_dict = {'trade_date':np.array([each.to_pydatetime() for \
                                                    each in self.trade_date])}
     
         columns1 = ['open_price','high_price','low_price','close_price']
-        columns2 = ['amount','volume']        
+        columns2 = ['amount','volume']   
+        
         for attr in columns1:
             tmp = pd.pivot_table(self.data,values = [attr],
                                     columns = ['trade_code'],
@@ -107,23 +104,23 @@ class DiskDataSource(AbstractDataSource):
                              columns = ['trade_code'],
                              fill_value = 0.0)
         tmp = tmp['open_price']
-        tmp = tmp.loc[(tmp.index <= self.trade_date[-1]) & \
-                      (tmp.index >= self.trade_date[0])]
+        tmp = tmp.loc[(tmp.index <= ds.trade_date[-1]) & \
+                      (tmp.index >= ds.trade_date[0])]
         tmp[tmp > 0] = 1.0
         tmp.index = tmp.index.to_pydatetime()
         return tmp
     
 if __name__ == '__main__':
     from vectra.utils.parse_config import Config
-    universe = pd.read_excel('G:\\Work_ldh\\PM\\F1\\bt\\universe.xlsx')['code'].values.tolist()
+    file_path = 'G:\\Work_ldh\\Projects\\yi_portfolio\\yi_invest\\data'
+    universe = bcolz.open(file_path,mode = 'r').todataframe()
+    universe = universe['trade_code'].unique().tolist()
     config = {'base':{'start_date':'20130101',
                   'end_date':'20171231',
                   'capital':1000000.0,
                   'frequency':'1d',
                   'universe':universe},
-          'source':'excel',
-          'file_path':'G:\\Work_ldh\\PM\\F1\\bt\\data2.xlsx'}
+          'source':'bcolz',
+          'file_path':file_path}
     config = Config(config)
-    ds = DiskDataSource(config,universe,'G:\\Work_ldh\\PM\\F1\\bt\\data2.xlsx')
-
-
+    ds = BcolzDataSource(config,universe,file_path)
