@@ -121,6 +121,47 @@ def get_wsd(universe,factors,start_date,end_date,names = None,
         df = pd.DataFrame(data.Data,columns = data.Times,index = data.Codes).T
     return df
 
+def get_wsi(universe,factors,start_datetime,end_datetime,names = None,**options):
+    '''
+    获取万德分钟序列数据。
+    
+    Parameters
+    ----------
+    universe
+        list ['600340.SH','000001.SZ']
+    factors
+        'close,volume'
+    start_datetime
+        '2017-10-11 09:00:00'
+    end_date
+        '2017-10-21 15:00:00'
+    names
+        list of str,列别名,默认为None,仅对单标的多因素
+    options
+        其他参数
+        
+    Returns
+    --------
+    DataFrame
+    
+    Notes
+    ----------
+    universe与factors最多有一个是多维。
+    '''       
+    
+    options = dict_2_str(options)
+    universe_wind = ','.join(universe)
+    data = w.wsi(universe_wind,factors,start_datetime,end_datetime,options)
+
+    if len(universe) == 1:
+        if names is not None:
+            df = pd.DataFrame(data.Data,columns = data.Times,index = names).T
+        else:
+            df = pd.DataFrame(data.Data,columns = data.Times,index = data.Fields).T
+    else:
+        df = pd.DataFrame(data.Data,columns = data.Times,index = data.Codes).T
+    return df
+
 def get_tdays(start_date,end_date,**options):
     '''
     获取交易日历序列。
@@ -287,8 +328,10 @@ def prepare_backtest_data(normal_universe,start_date,end_date,
     return comb_data
 
 if __name__ == '__main__':
-    data = get_wset('optioncontractbasicinfo',exchange = 'sse',windcode = '510050.SH',
-                    status = 'trading')
+    data = get_wsi(['10001025.SH'],'close,volume',
+                   '2018-05-10 09:00:00','2018-05-10 14:23:15')
+#    data = get_wset('optioncontractbasicinfo',exchange = 'sse',windcode = '510050.SH',
+#                    status = 'trading')
 #    data = get_wsq(['600340.SH','159924.SZ'])
 #    data = prepare_backtest_data(['600340.SH','600001.SH'],'20171201','20180101',
 #                                 output_path = 'G:\\Work_ldh\\tmp\\test.xlsx')
