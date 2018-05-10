@@ -188,6 +188,25 @@ def get_tdays(start_date,end_date,**options):
     t_days = pd.Series(t_days.Data[0])
     return t_days
 
+def get_tdaysoffset(num,date,**options):
+    '''
+    获取日期端点数据。
+    
+    Parameters
+    -----------
+    num
+        int,正为面向未来,负为面向过去
+    date
+        str,'2018-05-10'
+        
+    Returns
+    -------
+    datetime
+    
+    '''
+    options = dict_2_str(options)
+    date = w.tdaysoffset(num,date,options)
+    return date.Data[0][0]
 
 def get_edb(idx_universe,start_date,end_date,names = None,**options):
     '''
@@ -328,8 +347,9 @@ def prepare_backtest_data(normal_universe,start_date,end_date,
     return comb_data
 
 if __name__ == '__main__':
-    data = get_wsi(['10001025.SH'],'close,volume',
-                   '2018-05-10 09:00:00','2018-05-10 14:23:15')
+    date = get_tdaysoffset(-1,'2018-05-10')
+#    data = get_wsi(['10001025.SH'],'close,volume',
+#                   '2018-05-10 09:00:00','2018-05-10 14:23:15')
 #    data = get_wset('optioncontractbasicinfo',exchange = 'sse',windcode = '510050.SH',
 #                    status = 'trading')
 #    data = get_wsq(['600340.SH','159924.SZ'])

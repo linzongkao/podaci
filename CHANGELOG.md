@@ -1,5 +1,6 @@
 # 2013-05-10
 1. 添加wind分钟线获取函数get_wsi
+2. 添加wind日期端点函数get_tdaysoffset
 
 # 2018-03-08
 1. 修正DiskDataSource读取时的问题
