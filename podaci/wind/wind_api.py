@@ -356,7 +356,8 @@ if __name__ == '__main__':
 #    data = prepare_backtest_data(['600340.SH','600001.SH'],'20171201','20180101',
 #                                 output_path = 'G:\\Work_ldh\\tmp\\test.xlsx')
 #    from podaci.wind.wind_api import get_wsd
-#    etf_universe = ['510300.SH','510500.SH','512100.SH',
+#    etf_universe = ['510300.SH','510500.SH','512100.SH',1
+
 #                    '518880.SH','513500.SH','513600.SH',
 #                    '511010.SH','160609.OF']
 #    
