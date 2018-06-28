@@ -107,7 +107,7 @@ class Calendar():
             elif direction == '-':
                 dates = self.trade_calendar.loc[self.trade_calendar <= t_date]
                 return dates.tolist()[0].to_pydatetime()
-             
+        
         
 if __name__ == '__main__':
     a = Calendar('20010101','20180515')
