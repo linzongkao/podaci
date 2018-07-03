@@ -6,6 +6,7 @@ Created on Thu Oct 12 15:53:38 2017
 """
 
 # wind.py
+
 import pandas as pd
 from WindPy import w
 from utils import (code_2_wind_symbol,
@@ -292,7 +293,8 @@ def get_wset(set_name,**options):
     return data
 
 def prepare_backtest_data(normal_universe,start_date,end_date,
-                          output_path,monetary_universe = None):
+                          output_path,save_format = 'excel',
+                          monetary_universe = None):
     '''
     为vectra准备回测数据。数据默认为前复权数据。
     
@@ -306,6 +308,8 @@ def prepare_backtest_data(normal_universe,start_date,end_date,
         '20170101'
     output_path
         str,数据保存地址,含文件名及后缀
+    save_format
+        str,数据保存形式,默认为excel,也支持ctable(bcolz格式)
     monetary_universe
         list of str,万德编码,货币基金  
         
@@ -343,7 +347,12 @@ def prepare_backtest_data(normal_universe,start_date,end_date,
             comb_data = pd.concat([comb_data,tmp])
             
     comb_data.index.name = 'trade_date'
-    comb_data.to_excel(output_path)
+    if save_format == 'excel':
+        comb_data.to_excel(output_path)
+    elif save_format == 'ctable':
+        import bcolz
+        comb_data_reset = comb_data.reset_index()
+        bcolz.ctable.fromdataframe(comb_data_reset,rootdir = output_path,mode = 'w')
     return comb_data
 
 def close_windapi():
@@ -351,7 +360,7 @@ def close_windapi():
     
 if __name__ == '__main__':
 #    date = get_tdaysoffset(-1,'2018-05-10')
-    data = get_wsi(row[:2],'close',row[2],row[3],BarSize = '15')
+#    data = get_wsi(row[:2],'close',row[2],row[3],BarSize = '15')
 #    data = get_wset('optioncontractbasicinfo',exchange = 'sse',windcode = '510050.SH',
 #                    status = 'trading')
 #    data = get_wsq(['600340.SH','159924.SZ'])
@@ -378,4 +387,9 @@ if __name__ == '__main__':
 #    start_date = '20130101'
 #    end_date = '20180101'
 #    output_path = 'backtest_etf_data.xlsx'
-#    bt_data = prepare_backtest_data(normal_universe,start_date,end_date,monetary_universe)
+    bt_data = prepare_backtest_data(['600887.SH'],'20180501','20180601',
+                                    'G:\\Work_ldh\\Data\\tradeData\\trade',
+                                    save_format = 'ctable')
+    import bcolz
+    data = bcolz.ctable(rootdir = 'G:\\Work_ldh\\Data\\tradeData\\trade')
+    data_df = data.todataframe()
