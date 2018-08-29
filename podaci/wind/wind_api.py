@@ -119,7 +119,7 @@ def get_wsd(universe,factors,start_date,end_date,names = None,
         else:
             df = pd.DataFrame(data.Data,columns = data.Times,index = data.Fields).T
     else:
-        df = pd.DataFrame(data.Data,columns = data.Times,index = data.Codes).T
+        df = pd.DataFrame(data.Data,columns = data.Codes,index = data.Times)
     return df
 
  
@@ -393,3 +393,5 @@ if __name__ == '__main__':
     import bcolz
     data = bcolz.ctable(rootdir = 'G:\\Work_ldh\\Data\\tradeData\\trade')
     data_df = data.todataframe()
+    
+    data 
