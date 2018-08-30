@@ -111,7 +111,7 @@ def get_stock_universe(is_hs ='S',list_status = '',exchange_id = ''):
     
 
 if __name__ == '__main__':
-#    refresh_company_data('000860.SZ')
+    refresh_company_data('000860.SZ')
 #    data = get_company_data('000860.SZ')
-    stock_basic = get_stock_universe()
+#    stock_basic = get_stock_universe()
     
