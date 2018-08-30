@@ -99,4 +99,4 @@ ENV/
 .mypy_cache/
 
 # yaml
-*.yaml
+*.yaml 
