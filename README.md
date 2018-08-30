@@ -16,9 +16,7 @@ To support vector. And now is made up by:
 1. Guosen local database
 2. Execel format files
 
-## tsdatabase
-To build personal database and maintain it anywhere anyplace, and the only necssity is the Internet.
-Now it's in the plan. The first source of data will be tushare.
-
+## tushare
+In the ./podaci/tushare/etc.yaml, designated the directory you want to save the data and the tushare token.
 
 
