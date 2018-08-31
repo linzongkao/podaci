@@ -11,12 +11,14 @@ Created on Fri Nov 03 15:18:17 2017
 
 # database_engine.py
 
+import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 import yaml
 from consts import DB_STATE
 
-with open('etc.yaml','r') as f:
+etc_path = os.path.join(os.path.split(__file__)[0],'etc.yaml')
+with open(etc_path,'r') as f:
     etc = yaml.load(f)
 
 class DatabaseEngine():
