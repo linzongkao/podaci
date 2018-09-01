@@ -31,6 +31,8 @@ pro = ts.pro_api()
 def refresh_company_data(stock_code):
     '''
     刷新公司数据.
+    包括: 公司单季度三大财务报表;公司最新合并财务报表,首次更新于20180901
+    使用注意事项: 未来公司调整过去财务报表
     '''
     df_names = ['income','balancesheet','cashflow']
     data_dict = {}
@@ -93,7 +95,11 @@ def refresh_company_data(stock_code):
     for key,val in data_dict.items():
         if len(val) != 0:
             for col in col_names:
+#                try:
+                val[col] = val[col].fillna(method = 'pad')
                 val[col] = val[col].apply(lambda x:x.encode('utf8'))
+#                except:
+#                    print 'stock_code:%s,table_name:%s,col_name:%s'%(stock_code,key,col)
             
     for key,val in data_dict.items():
         val.to_hdf(save_path,key = key,append = True)
@@ -174,17 +180,18 @@ def refresh_data(stock_list):
         print '%s has been refreshed sucessfully which costs %s , the total time cost is %s'%(stk,time_cost,total_time)
         
 if __name__ == '__main__':
-#    refresh_company_data('000860.SZ')
+    refresh_company_data('600072.SH')
 #    data = get_company_data('000860.SZ')
-    stock_basic = get_stock_universe()
-    stock_list = stock_basic['stock_code'].tolist() 
+#    stock_basic = get_stock_universe()
+#    stock_list = stock_basic['stock_code'].tolist() 
     while True:
         try:
-            refresh_data(stock_list[:1000])
+            refresh_data(stock_list[2100:])
             print 'All Data Over'
             break
         except Exception as e:
             print e
             time.sleep(10)
             continue
-#    da = get_company_data('000860.SZ')
+#    da = get_company_data('001965.SZ')
+#    os.system('shutdown -s -t 30')
