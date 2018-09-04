@@ -18,7 +18,9 @@ from SQLs import (SQL_GET_SW_INDEX_CLOSE,
                   SQL_GET_FUND_NET_VALUE,
                   SQL_GET_TRADE_CALENDAR,
                   SQL_GET_FUND_INFER_INDUSTRY_CURRENT,
-                  SQL_GET_FUNDS_NET_VALUE)
+                  SQL_GET_FUNDS_NET_VALUE,
+                  SQL_GET_FUND_MANAGER,
+                  SQL_GET_MANAGER_FUND)
 from consts import SW_INDUSTRY_FIRST_CODE
 
 engine_ld_obj = DatabaseEngine('ld')
@@ -157,7 +159,31 @@ def get_trade_calendar(start_date = '20170101',
     engine_ld)
     
 
-
+def get_fund_manager(fund_universe,trade_date):
+    '''
+    获取基金对应基金在某日经理列表.
+    '''
+    fund_universe_adj = ["'%s'"%each for each in fund_universe]
+    funds = ','.join(fund_universe_adj)
+    return pd.read_sql(SQL_GET_FUND_MANAGER.format(fund_universe = funds,
+                                                   trade_date = trade_date),engine_xiaoyi)
+def get_manager_fund(managers_ids,trade_date):
+    '''
+    根据基金经理id获取某日其管理的基金列表。
+    
+    Parameters
+    ------------
+    managers_ids
+        list
+    trade_date
+        YYYYMMDD
+    '''
+    managers_ids = ["'%s'"%each for each in managers_ids]
+    managers_ids = ",".join(managers_ids)
+    return pd.read_sql(SQL_GET_MANAGER_FUND.format(managers_ids = managers_ids,
+                                                   trade_date = trade_date),
+        engine_xiaoyi)
+    
 if __name__ == '__main__':
 #    data = get_sw_industry_index('20180801','20180820')
 #    data = get_fund_hold_stock_top10('20180801')
@@ -167,5 +193,7 @@ if __name__ == '__main__':
 #    data = get_fund_score()
 #    data = get_fund_net_value('210013','20180101','20180201')
 #    data = get_trade_calendar()
-    data = get_funds_net_value([u'530003', u'200010', u'002152', u'960028', u'000294'],
-                               start_date,end_date)
+#    data = get_funds_net_value([u'530003', u'200010', u'002152', u'960028', u'000294'],
+#                               start_date,end_date)
+#    data = get_fund_manager(['519606','001878'],'20171231')
+    data = get_manager_fund(['{AFFBFC95-FA1E-4243-8CF3-D6F7F69B5528}'],'20171231')

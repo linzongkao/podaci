@@ -140,3 +140,45 @@ WHERE CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962),112) >= '{start_d
 AND CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962),112) <= '{end_date}'
 ORDER BY trade_date asc
 '''
+
+SQL_GET_FUND_MANAGER = '''
+SELECT 
+[trade_code]
+,[name]
+,[appointment_date]
+,[quit_date]
+,[brief_introduction]
+,[gender]
+,[birthday]
+,[degree]
+,[nationality]
+,[manager_id]
+,[fund_name]
+,[update_datetime]
+,[obj_id]
+FROM [sds209635243_db].[dbo].[fund_manager]
+WHERE trade_code IN ({fund_universe})
+AND appointment_date < '{trade_date}'
+AND(CASE WHEN (quit_date is null) then '23000101' else quit_date end) > '{trade_date}' 
+'''
+
+SQL_GET_MANAGER_FUND = '''
+SELECT 
+[trade_code]
+,[name]
+,[appointment_date]
+,[quit_date]
+,[brief_introduction]
+,[gender]
+,[birthday]
+,[degree]
+,[nationality]
+,[manager_id]
+,[fund_name]
+,[update_datetime]
+,[obj_id]
+FROM [sds209635243_db].[dbo].[fund_manager]
+WHERE obj_id IN ({managers_ids})
+AND appointment_date <  '{trade_date}'
+AND (CASE WHEN (quit_date is null) then '21000101' else quit_date end) > '{trade_date}' 
+'''
