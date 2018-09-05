@@ -20,7 +20,11 @@ from SQLs import (SQL_GET_SW_INDEX_CLOSE,
                   SQL_GET_FUND_INFER_INDUSTRY_CURRENT,
                   SQL_GET_FUNDS_NET_VALUE,
                   SQL_GET_FUND_MANAGER,
-                  SQL_GET_MANAGER_FUND)
+                  SQL_GET_MANAGER_FUND,
+                  SQL_GET_STOCK_BASICS,
+                  SQL_GET_STOCK_DAILY_DATA1,
+                  SQL_GET_STOCK_DAILY_DATA2,
+                  SQL_GET_STOCK_MIN_CLOSE)
 from consts import SW_INDUSTRY_FIRST_CODE
 
 engine_ld_obj = DatabaseEngine('ld')
@@ -184,6 +188,68 @@ def get_manager_fund(managers_ids,trade_date):
                                                    trade_date = trade_date),
         engine_xiaoyi)
     
+def get_stock_basic():
+    '''
+    获取当前上市公司股票基础列表。
+    '''
+    return pd.read_sql(SQL_GET_STOCK_BASICS,engine_ld)
+
+def get_stock_min_data_close(start_dt,end_dt,stock_universe,year = ''):
+    '''
+    获取股票2016年前分钟线收盘数据。
+
+    Parameters
+    -----------
+    start_dt
+        开始日期
+    end_dt
+        结束日期
+    stock_universe
+        list,默认''取全部股票
+    year
+        分钟线数据年份,''默认取2016年之前的数据,之后的数据需指定年份
+    Returns
+    --------
+    DataFrame
+    '''
+    stock_universe = ["'%s'"%each for each in stock_universe]
+    stock_universe = ",".join(stock_universe)
+    return pd.read_sql(SQL_GET_STOCK_MIN_CLOSE.format(year = year,
+                                                      start_dt = start_dt,
+                                                      end_dt = end_dt,
+                                                      stock_universe = stock_universe),
+        engine_ld)
+
+        
+def get_stock_daily_data(start_date,end_date,stock_universe = ''):
+    '''
+    获取股票日线数据。可获取全部股票或者指定股票的日线数据。
+    
+    Parameters
+    -----------
+    start_date
+        开始日期
+    end_date
+        结束日期
+    stock_universe
+        list,默认''取全部股票
+        
+    Returns
+    --------
+    DataFrame
+    '''
+    if len(stock_universe) == 0:
+        return pd.read_sql(SQL_GET_STOCK_DAILY_DATA1.format(start_date = start_date,
+                                                            end_date = end_date),
+        engine_ld)
+    else:
+        stock_universe = ["'%s'"%each for each in stock_universe]
+        stock_universe = ",".join(stock_universe)
+        return pd.read_sql(SQL_GET_STOCK_DAILY_DATA2.format(start_date = start_date,
+                                                            end_date = end_date,
+                                                            stock_universe = stock_universe),
+        engine_ld)
+
 if __name__ == '__main__':
 #    data = get_sw_industry_index('20180801','20180820')
 #    data = get_fund_hold_stock_top10('20180801')
@@ -196,4 +262,7 @@ if __name__ == '__main__':
 #    data = get_funds_net_value([u'530003', u'200010', u'002152', u'960028', u'000294'],
 #                               start_date,end_date)
 #    data = get_fund_manager(['519606','001878'],'20171231')
-    data = get_manager_fund(['{AFFBFC95-FA1E-4243-8CF3-D6F7F69B5528}'],'20171231')
+#    data = get_manager_fund(['{AFFBFC95-FA1E-4243-8CF3-D6F7F69B5528}'],'20171231')
+#    data = get_stock_basic()
+#    data1 = get_stock_daily_data('20180901','20180905',['000860'])
+    data2 = get_stock_min_data_close('20180901','20180905',['000860'],2018)

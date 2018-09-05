@@ -182,3 +182,122 @@ WHERE obj_id IN ({managers_ids})
 AND appointment_date <  '{trade_date}'
 AND (CASE WHEN (quit_date is null) then '21000101' else quit_date end) > '{trade_date}' 
 '''
+
+SQL_GET_STOCK_BASICS = '''
+SELECT 
+[股票名称] as stock_name
+,[发布日期] as publish_date
+,[交易所] as exchange
+,[股票代码] as stock_code
+,[上市日期] as list_date
+,[摘牌日期] as delist_date
+,[是否摘牌] as if_delist
+,[是否上市] as if_list
+FROM [BasicData].[dbo].[Yi_Stocks]
+WHERE [是否上市] = 1
+'''
+
+SQL_GET_STOCK_MIN_DATA = '''
+SELECT 
+CONVERT(VARCHAR(32),CONVERT(DATETIME,table_close.[numtime] - 693962 + 0.0001/9),120) as trade_date
+,table_close.[stockcode]
+,table_close.[market]
+,table_open.value as open_price
+,table_close.[value] as close_price
+,table_high.value as high_price
+,table_low.value as low_price
+,table_amount.value as amount
+FROM [BasicData].[dbo].[Yi_1mClose] table_close
+INNER JOIN [Yi_1mOpen] table_open ON (table_open.numtime = table_close.numtime AND table_open.stockcode = table_close.stockcode)
+INNER JOIN [Yi_1mHigh] table_high ON (table_high.numtime = table_close.numtime AND table_high.stockcode = table_close.stockcode)
+INNER JOIN [Yi_1mLow] table_low ON (table_low.numtime = table_close.numtime AND table_low.stockcode = table_close.stockcode)
+INNER JOIN [Yi_1mAmount] table_amount ON (table_amount.numtime = table_close.numtime AND table_amount.stockcode = table_close.stockcode)
+WHERE 
+'''
+
+SQL_GET_STOCK_MIN_DATA_OPEN = '''
+SELECT 
+CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 + 0.0001/9),120) as trade_dt
+,[stockcode]
+,[market]
+,value as open_price
+FROM [BasicData].[dbo].[Yi_1mOpen]
+WHERE CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 + 0.0001/9),120) >= '{start_dt}'
+AND CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 + 0.0001/9),120) <= '{end_dt}'
+AND stockcode IN ({stock_universe})
+'''
+
+SQL_GET_STOCK_MIN_DATA_HIGH = '''
+SELECT 
+CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 + 0.0001/9),120) as trade_dt
+,[stockcode]
+,[market]
+,value as high_price
+FROM [BasicData].[dbo].[Yi_1mHigh]
+WHERE CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 + 0.0001/9),120) >= '{start_dt}'
+AND CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 + 0.0001/9),120) <= '{end_dt}'
+AND stockcode IN ({stock_universe})
+'''
+
+SQL_GET_STOCK_MIN_LOW = '''
+SELECT 
+CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 + 0.0001/9),120) as trade_dt
+,[stockcode]
+,[market]
+,value as low_price
+FROM [BasicData].[dbo].[Yi_1mOpen]
+WHERE CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 + 0.0001/9),120) >= '{start_dt}'
+AND CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 + 0.0001/9),120) <= '{end_dt}'
+AND stockcode IN ({stock_universe})
+'''
+
+SQL_GET_STOCK_MIN_CLOSE = '''
+SELECT 
+CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 + 0.0001/9),120) as trade_dt
+,[stockcode]
+,[market]
+,value as close_price
+FROM [BasicData].[dbo].[Yi_1mClose{year}]
+WHERE CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 + 0.0001/9),120) >= '{start_dt}'
+AND CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 + 0.0001/9),120) <= '{end_dt}'
+AND stockcode IN ({stock_universe})
+'''
+
+
+
+SQL_GET_STOCK_DAILY_DATA1 = '''
+SELECT CONVERT(VARCHAR(32),CONVERT(DATETIME,t_c.[numtime] - 693962 ),112)
+,t_c.[stockcode]
+,t_c.[market]
+,t_c.[value] as close_price
+,t_o.value as open_price
+,t_l.value as low_price
+,t_h.value as high_price
+,t_a.value as amount
+FROM [BasicData].[dbo].[Yi_DayClose] t_c
+LEFT JOIN [Yi_DayOpen] t_o ON (t_c.numtime = t_o.numtime AND t_c.stockcode = t_o.stockcode)
+LEFT JOIN [Yi_DayHigh] t_h ON (t_c.numtime = t_h.numtime AND t_c.stockcode = t_h.stockcode)
+LEFT JOIN [Yi_DayLow] t_l ON (t_c.numtime = t_l.numtime AND t_c.stockcode = t_l.stockcode)
+LEFT JOIN [Yi_DayAmount] t_a ON (t_c.numtime = t_a.numtime AND t_c.stockcode = t_a.stockcode)
+WHERE  CONVERT(VARCHAR(32),CONVERT(DATETIME,t_c.[numtime] - 693962 ),112) >= '{start_date}'
+AND CONVERT(VARCHAR(32),CONVERT(DATETIME,t_c.[numtime] - 693962 ),112) <= '{end_date}'
+'''
+
+SQL_GET_STOCK_DAILY_DATA2 = '''
+SELECT CONVERT(VARCHAR(32),CONVERT(DATETIME,t_c.[numtime] - 693962 ),112)
+,t_c.[stockcode]
+,t_c.[market]
+,t_c.[value] as close_price
+,t_o.value as open_price
+,t_l.value as low_price
+,t_h.value as high_price
+,t_a.value as amount
+FROM [BasicData].[dbo].[Yi_DayClose] t_c
+LEFT JOIN [Yi_DayOpen] t_o ON (t_c.numtime = t_o.numtime AND t_c.stockcode = t_o.stockcode)
+LEFT JOIN [Yi_DayHigh] t_h ON (t_c.numtime = t_h.numtime AND t_c.stockcode = t_h.stockcode)
+LEFT JOIN [Yi_DayLow] t_l ON (t_c.numtime = t_l.numtime AND t_c.stockcode = t_l.stockcode)
+LEFT JOIN [Yi_DayAmount] t_a ON (t_c.numtime = t_a.numtime AND t_c.stockcode = t_a.stockcode)
+WHERE  CONVERT(VARCHAR(32),CONVERT(DATETIME,t_c.[numtime] - 693962 ),112) >= '{start_date}'
+AND CONVERT(VARCHAR(32),CONVERT(DATETIME,t_c.[numtime] - 693962 ),112) <= '{end_date}'
+AND t_c.[stockcode] IN ({stock_universe})
+'''
