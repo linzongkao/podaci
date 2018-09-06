@@ -254,6 +254,8 @@ AND stockcode IN ({stock_universe})
 SQL_GET_STOCK_MIN_CLOSE = '''
 SELECT 
 CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 + 0.0001/9),120) as trade_dt
+,CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 ),112) as trade_date
+,[stockcode]
 ,[stockcode]
 ,[market]
 ,value as close_price
@@ -266,8 +268,8 @@ AND stockcode IN ({stock_universe})
 
 
 SQL_GET_STOCK_DAILY_DATA1 = '''
-SELECT CONVERT(VARCHAR(32),CONVERT(DATETIME,t_c.[numtime] - 693962 ),112)
-,t_c.[stockcode]
+SELECT CONVERT(VARCHAR(32),CONVERT(DATETIME,t_c.[numtime] - 693962 ),112) as trade_date
+,t_c.[stockcode] as stock_code
 ,t_c.[market]
 ,t_c.[value] as close_price
 ,t_o.value as open_price
@@ -284,9 +286,9 @@ AND CONVERT(VARCHAR(32),CONVERT(DATETIME,t_c.[numtime] - 693962 ),112) <= '{end_
 '''
 
 SQL_GET_STOCK_DAILY_DATA2 = '''
-SELECT CONVERT(VARCHAR(32),CONVERT(DATETIME,t_c.[numtime] - 693962 ),112)
-,t_c.[stockcode]
-,t_c.[market]
+SELECT CONVERT(VARCHAR(32),CONVERT(DATETIME,t_c.[numtime] - 693962 ),112) as trade_date
+,t_c.[stockcode] as stock_code
+,t_c.[market] 
 ,t_c.[value] as close_price
 ,t_o.value as open_price
 ,t_l.value as low_price

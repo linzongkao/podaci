@@ -37,6 +37,11 @@ session_xiaoyi = engine_xiaoyi_obj.get_session()
 engine_wind_obj = DatabaseEngine('wind')
 engine_wind = engine_wind_obj.get_engine()
 
+engine_gb_obj = DatabaseEngine('geniusbar')
+engine_gb = engine_gb_obj.get_engine()
+session_gb = engine_gb_obj.get_session()
+
+#%% 数据读取
 def get_sw_industry_index(start_date,end_date):
     '''
     获取申万一级行业指数收盘值。
@@ -196,7 +201,7 @@ def get_stock_basic():
 
 def get_stock_min_data_close(start_dt,end_dt,stock_universe,year = ''):
     '''
-    获取股票2016年前分钟线收盘数据。
+    获取股票分钟线收盘数据。
 
     Parameters
     -----------
@@ -219,7 +224,31 @@ def get_stock_min_data_close(start_dt,end_dt,stock_universe,year = ''):
                                                       end_dt = end_dt,
                                                       stock_universe = stock_universe),
         engine_ld)
+def get_stock_min_data_close_multi(start_dt,end_dt,stock_universe,year = ''):
+    '''
+    获取股票分钟线收盘数据。允许多进程。
 
+    Parameters
+    -----------
+    start_dt
+        开始日期
+    end_dt
+        结束日期
+    stock_universe
+        list,默认''取全部股票
+    year
+        分钟线数据年份,''默认取2016年之前的数据,之后的数据需指定年份
+    Returns
+    --------
+    DataFrame
+    '''
+    stock_universe = ["'%s'"%each for each in stock_universe]
+    stock_universe = ",".join(stock_universe)
+    return pd.read_sql(SQL_GET_STOCK_MIN_CLOSE.format(year = year,
+                                                      start_dt = start_dt,
+                                                      end_dt = end_dt,
+                                                      stock_universe = stock_universe),
+        DatabaseEngine('ld').get_engine())
         
 def get_stock_daily_data(start_date,end_date,stock_universe = ''):
     '''
@@ -250,6 +279,52 @@ def get_stock_daily_data(start_date,end_date,stock_universe = ''):
                                                             stock_universe = stock_universe),
         engine_ld)
 
+
+#%% 数据写入
+def save_into_db(df,table_name,dtype_dict,db_name,if_exists,index = False):
+    '''
+    写入数据库.
+    
+    Parameters
+    ----------
+    df
+        需要写入的DataFrame
+    table_name
+        写入表名
+    dtype_dict
+        sqlalchemy数据类型dict
+    db_name
+        写入数据库名,支持gb,xiaoyi
+    if_exists
+        若存在处理方式,'replace'替代,'fail'失败,'append'添加新值
+    index
+        是否写入index,默认为False
+    '''
+    if db_name == 'gb':
+        df.to_sql(table_name,engine_gb,dtype = dtype_dict,if_exists = if_exists,
+                  index = index)
+    elif db_name == 'xiaoyi':
+        df.to_sql(table_name,engine_xiaoyi,dtype = dtype_dict,if_exists = if_exists,
+                  index = index)     
+        
+def execute_session(sql_statement,db_name):
+    '''
+    执行Session操作。
+    
+    Parameters
+    ------------
+    sql_statement
+        sql语句
+    db_name
+        写入数据库名,支持gb,xiaoyi
+    '''
+    if db_name == 'gb':
+        session_gb.execute(sql_statement)
+        session_gb.commit()
+    elif db_name == 'xiaoyi':
+        session_xiaoyi.execute(sql_statement)
+        session_xiaoyi.commit()
+        
 if __name__ == '__main__':
 #    data = get_sw_industry_index('20180801','20180820')
 #    data = get_fund_hold_stock_top10('20180801')
