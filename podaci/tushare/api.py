@@ -19,9 +19,15 @@ with open(etc_path,'r') as f:
     
 company_data_path = etc['company_data_path']
 trade_data_path = etc['trade_data_path']
+token = etc['tushare_token']
 
+pro = ts.pro_api(token)
 
-pro = ts.pro_api()
+def get_pro():
+    '''
+    返回pro对象.
+    '''
+    return pro
 
 def get_company_data(stock_code):
     '''
