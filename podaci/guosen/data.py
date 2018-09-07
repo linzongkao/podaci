@@ -24,7 +24,8 @@ from SQLs import (SQL_GET_SW_INDEX_CLOSE,
                   SQL_GET_STOCK_BASICS,
                   SQL_GET_STOCK_DAILY_DATA1,
                   SQL_GET_STOCK_DAILY_DATA2,
-                  SQL_GET_STOCK_MIN_CLOSE)
+                  SQL_GET_STOCK_MIN_CLOSE,
+                  SQL_GET_STOCK_FEATURES)
 from consts import SW_INDUSTRY_FIRST_CODE
 
 engine_ld_obj = DatabaseEngine('ld')
@@ -280,6 +281,44 @@ def get_stock_daily_data(start_date,end_date,stock_universe = ''):
         engine_ld)
 
 
+def get_stock_features(start_date,end_date,stock_universe = ''):
+    '''
+    获取股票特征数据。
+    
+    Parameters
+    -----------
+    start_date
+        开始日期
+    end_date
+        结束日期
+    stock_universe
+        list,default ''
+    '''
+    stock_universe = ["'%s'"%each for each in stock_universe]
+    stock_universe = ",".join(stock_universe)
+    return pd.read_sql(SQL_GET_STOCK_FEATURES.format(start_date = start_date,
+                                                     end_date = end_date,
+                                                     stock_universe = stock_universe),
+        engine_gb)
+    
+#%% 通用数据获取
+def get_data(sql_statement,db_name):
+    '''
+    通用数据获取接口。
+    
+    Parameters
+    ------------
+    sql_statement
+        sql语句
+    db_name
+        写入数据库名,支持gb,xiaoyi    
+    '''
+    if db_name == 'gb':
+        engine = engine_gb
+    elif db_name == 'xiaoyi':
+        engine = engine_xiaoyi
+    return pd.read_sql(sql_statement,engine)
+
 #%% 数据写入
 def save_into_db(df,table_name,dtype_dict,db_name,if_exists,index = False):
     '''
@@ -340,4 +379,5 @@ if __name__ == '__main__':
 #    data = get_manager_fund(['{AFFBFC95-FA1E-4243-8CF3-D6F7F69B5528}'],'20171231')
 #    data = get_stock_basic()
 #    data1 = get_stock_daily_data('20180901','20180905',['000860'])
-    data2 = get_stock_min_data_close('20180901','20180905',['000860'],2018)
+#    data2 = get_stock_min_data_close('20180901','20180905',['000860'],2018)
+    data3 = get_stock_features('20180101','20180201',['000860'])

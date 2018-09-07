@@ -303,3 +303,20 @@ WHERE  CONVERT(VARCHAR(32),CONVERT(DATETIME,t_c.[numtime] - 693962 ),112) >= '{s
 AND CONVERT(VARCHAR(32),CONVERT(DATETIME,t_c.[numtime] - 693962 ),112) <= '{end_date}'
 AND t_c.[stockcode] IN ({stock_universe})
 '''
+
+SQL_GET_STOCK_FEATURES = '''
+SELECT 
+[stock_code]
+,[trade_date]
+,[b]
+,[c]
+,[u]
+,[l]
+,[ol]
+,[cl]
+,[ac]
+FROM [LDH_features]
+WHERE trade_date >= '{start_date}'
+AND trade_date <= '{end_date}'
+AND stock_code IN ({stock_universe})
+'''
