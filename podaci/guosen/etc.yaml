@@ -27,3 +27,13 @@ wind:
         fsb
     passwd:
         fsb
+        
+geniusbar:
+    server:
+        172.19.62.182
+    db:
+        GeniusBar
+    user:
+        strategy
+    passwd:
+        fs95536!   
