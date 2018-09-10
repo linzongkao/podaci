@@ -98,5 +98,5 @@ ENV/
 # mypy
 .mypy_cache/
 
-# yaml
+# yaml files
 *.yaml 
