@@ -52,7 +52,7 @@ def get_sw_industry_index(start_date,end_date):
     data = pd.read_sql(SQL_GET_SW_INDEX_CLOSE.format(start_date = start_date,
                                                      end_date = end_date,
                                                      codes = codes),engine_ld)
-    return data
+    return data.drop_duplicates(['code','trade_date'])
 
 def get_fund_hold_stock_top10(end_date):
     '''
@@ -166,7 +166,7 @@ def get_trade_calendar(start_date = '20170101',
     '''
     return pd.read_sql(SQL_GET_TRADE_CALENDAR.format(start_date = start_date,
                                                      end_date = end_date),
-    engine_ld)
+    engine_ld).drop_duplicates('trade_date')
     
 
 def get_fund_manager(fund_universe,trade_date):
@@ -224,7 +224,8 @@ def get_stock_min_data_close(start_dt,end_dt,stock_universe,year = ''):
                                                       start_dt = start_dt,
                                                       end_dt = end_dt,
                                                       stock_universe = stock_universe),
-        engine_ld)
+        engine_ld).drop_duplicates(subset = ['stockcode','trade_dt'])
+        
 def get_stock_min_data_close_multi(start_dt,end_dt,stock_universe,year = ''):
     '''
     获取股票分钟线收盘数据。允许多进程。
@@ -249,7 +250,7 @@ def get_stock_min_data_close_multi(start_dt,end_dt,stock_universe,year = ''):
                                                       start_dt = start_dt,
                                                       end_dt = end_dt,
                                                       stock_universe = stock_universe),
-        DatabaseEngine('ld').get_engine())
+        DatabaseEngine('ld').get_engine()).drop_duplicates(subset = ['stockcode','trade_dt'])
         
 def get_stock_daily_data(start_date,end_date,stock_universe = ''):
     '''
@@ -271,14 +272,14 @@ def get_stock_daily_data(start_date,end_date,stock_universe = ''):
     if len(stock_universe) == 0:
         return pd.read_sql(SQL_GET_STOCK_DAILY_DATA1.format(start_date = start_date,
                                                             end_date = end_date),
-        engine_ld)
+        engine_ld).drop_duplicates(subset = ['stock_code','trade_date'])
     else:
         stock_universe = ["'%s'"%each for each in stock_universe]
         stock_universe = ",".join(stock_universe)
         return pd.read_sql(SQL_GET_STOCK_DAILY_DATA2.format(start_date = start_date,
                                                             end_date = end_date,
                                                             stock_universe = stock_universe),
-        engine_ld)
+        engine_ld).drop_duplicates(subset = ['stock_code','trade_date'])
 
 
 def get_stock_features(start_date,end_date,stock_universe = ''):

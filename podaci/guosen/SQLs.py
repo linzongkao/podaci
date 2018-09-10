@@ -256,7 +256,6 @@ SELECT
 CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 + 0.0001/9),120) as trade_dt
 ,CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 ),112) as trade_date
 ,[stockcode]
-,[stockcode]
 ,[market]
 ,value as close_price
 FROM [BasicData].[dbo].[Yi_1mClose{year}]
