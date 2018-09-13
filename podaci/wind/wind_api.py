@@ -119,7 +119,7 @@ def get_wsd(universe,factors,start_date,end_date,names = None,
         else:
             df = pd.DataFrame(data.Data,columns = data.Times,index = data.Fields).T
     else:
-        df = pd.DataFrame(data.Data,columns = data.Codes,index = data.Times)
+        df = pd.DataFrame(data.Data,columns = data.Times,index = data.Codes).T
     return df
 
  
@@ -387,11 +387,13 @@ if __name__ == '__main__':
 #    start_date = '20130101'
 #    end_date = '20180101'
 #    output_path = 'backtest_etf_data.xlsx'
-    bt_data = prepare_backtest_data(['600887.SH'],'20180501','20180601',
-                                    'G:\\Work_ldh\\Data\\tradeData\\trade',
-                                    save_format = 'ctable')
-    import bcolz
-    data = bcolz.ctable(rootdir = 'G:\\Work_ldh\\Data\\tradeData\\trade')
-    data_df = data.todataframe()
-    
-    data 
+#    bt_data = prepare_backtest_data(['600887.SH'],'20180501','20180601',
+#                                    'G:\\Work_ldh\\Data\\tradeData\\trade',
+#                                    save_format = 'ctable')
+#    import bcolz
+#    data = bcolz.ctable(rootdir = 'G:\\Work_ldh\\Data\\tradeData\\trade')
+#    data_df = data.todataframe()
+#    
+#    data 
+    option_amount = get_wsd(option_basic['wind_code'].tolist(),
+                            'amt',start_date,end_date)

@@ -99,4 +99,4 @@ ENV/
 .mypy_cache/
 
 # yaml files
-*.yaml 
+./podaci/tushare/etc.yaml 
