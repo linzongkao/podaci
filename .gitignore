@@ -100,3 +100,6 @@ ENV/
 
 # yaml files
 ./podaci/tushare/etc.yaml 
+
+# data items
+./podaci/tushare/data_items.txt
