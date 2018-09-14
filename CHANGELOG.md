@@ -1,3 +1,7 @@
+# 2018-09-14
+1. 重新构建了tushare的数据架构，获取数据会自动从远程或本地获取
+2. 添加了新tushare接口中的stock_basic,trade_calendar,daily,adj_factor的获取与更新逻辑
+
 # 2018-09-13
 1. 修复get_wsd
 
