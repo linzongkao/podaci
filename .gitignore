@@ -99,7 +99,7 @@ ENV/
 .mypy_cache/
 
 # yaml files
-./podaci/tushare/etc.yaml 
+podaci/tushare/etc.yaml 
 
 # data items
-./podaci/tushare/items.txt
+podaci/tushare/items.txt
