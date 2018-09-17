@@ -42,6 +42,10 @@ engine_gb_obj = DatabaseEngine('geniusbar')
 engine_gb = engine_gb_obj.get_engine()
 session_gb = engine_gb_obj.get_session()
 
+engine_xiaoyi40_obj = DatabaseEngine('xiaoyi40')
+engine_xiaoyi40 = engine_xiaoyi40_obj.get_engine()
+session_xiaoyi40 = engine_xiaoyi40_obj.get_session()
+
 #%% 数据读取
 def get_sw_industry_index(start_date,end_date):
     '''
@@ -318,6 +322,8 @@ def get_data(sql_statement,db_name):
         engine = engine_gb
     elif db_name == 'xiaoyi':
         engine = engine_xiaoyi
+    elif db_name == 'xiaoyi40':
+        engine = engine_xiaoyi40
     return pd.read_sql(sql_statement,engine)
 
 #%% 数据写入
@@ -334,7 +340,7 @@ def save_into_db(df,table_name,dtype_dict,db_name,if_exists,index = False):
     dtype_dict
         sqlalchemy数据类型dict
     db_name
-        写入数据库名,支持gb,xiaoyi
+        写入数据库名,支持gb,xiaoyi,xiaoyi40
     if_exists
         若存在处理方式,'replace'替代,'fail'失败,'append'添加新值
     index
@@ -345,7 +351,10 @@ def save_into_db(df,table_name,dtype_dict,db_name,if_exists,index = False):
                   index = index)
     elif db_name == 'xiaoyi':
         df.to_sql(table_name,engine_xiaoyi,dtype = dtype_dict,if_exists = if_exists,
-                  index = index)     
+                  index = index)   
+    elif db_name == 'xiaoyi40':
+        df.to_sql(table_name,engine_xiaoyi40,dtype = dtype_dict,if_exists = if_exists,
+                  index = index)
         
 def execute_session(sql_statement,db_name):
     '''
@@ -356,7 +365,7 @@ def execute_session(sql_statement,db_name):
     sql_statement
         sql语句
     db_name
-        写入数据库名,支持gb,xiaoyi
+        写入数据库名,支持gb,xiaoyi,xiaoyi40
     '''
     if db_name == 'gb':
         session_gb.execute(sql_statement)
@@ -364,6 +373,9 @@ def execute_session(sql_statement,db_name):
     elif db_name == 'xiaoyi':
         session_xiaoyi.execute(sql_statement)
         session_xiaoyi.commit()
+    elif db_name == 'xiaoyi40':
+        session_xiaoyi40.execute(sql_statement)
+        session_xiaoyi40.commit()
         
 if __name__ == '__main__':
 #    data = get_sw_industry_index('20180801','20180820')
