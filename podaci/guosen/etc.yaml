@@ -36,4 +36,14 @@ geniusbar:
     user:
         strategy
     passwd:
-        fs95536!   
+        fs95536! 
+        
+xiaoyi40:
+    server:
+        172.19.62.40
+    db:
+        Yi
+    user:
+        financial_xiaoyi
+    passwd:
+        fs95536!    

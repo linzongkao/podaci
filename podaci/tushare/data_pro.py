@@ -35,7 +35,7 @@ class DataPro():
         ts.set_token(tushare_token)
         self.pro = ts.pro_api()
         self.local_items = items
-        
+
     def update_data(self):
         '''
         更新本地数据.
@@ -77,6 +77,7 @@ class DataPro():
                 stock_basic[each] = stock_basic[each].apply(lambda x:None if x is None else x.encode('utf8'))
             stock_basic.to_hdf(os.path.join(data_pro_path,'stock_basic.h5'),'stock_basic',
                                mode = 'w',append = True)
+
             self._add_item('stock_basic')
             return stock_basic
         
@@ -178,6 +179,7 @@ class DataPro():
         code
             ts股票代码
         start_date
+
             开始日期
         end_date
             结束日期
@@ -215,20 +217,158 @@ class DataPro():
     def get_income(self,code,start_date,end_date,report_type = 1):
         '''
         获取利润表。
+		
+		Parameters
+		----------
+		code
+			ts代码
+		start_date
+            公告开始日期
+        end_date
+            公告结束日期
+        report_type
+            公告类型
+            
+        Returns
+        --------
+        DataFrame        
+        '''
+        if 'income' in self.local_items:
+            try:
+                return pd.read_hdf(os.path.join(data_pro_path,'income.h5'),
+                                   'income_%s_%s'%(code.split('.')[0],report_type),
+                                   where = ["(index>='%s') & (index<='%s')"%(start_date,end_date)]).\
+                                   drop_duplicates(['ann_date','end_date'])
+            except KeyError:
+                income = self.pro.query('income',ts_code = code,start_date = '20000101',
+                                              end_date = (dt.date.today()).strftime('%Y%m%d')).\
+                                        drop_duplicates(['ann_date','end_date'])
+                
+                fields = ['ts_code','ann_date','f_ann_date','end_date','report_type','comp_type']
+                for each in fields:
+                    income[each] = income[each].apply(lambda x:x.encode('utf8'))                   
+                income.set_index('f_ann_date',inplace = True)
+                income.to_hdf(os.path.join(data_pro_path,'income.h5'),
+                                  'income_%s_%s'%(code.split('.')[0],report_type),
+                                  mode = 'a',append = True)
+                return income.loc[(income.index >= start_date) & (income.index <= end_date)]  
+        else:
+            income = self.pro.query('income',ts_code = code,start_date = '20000101',
+                                              end_date = (dt.date.today()).strftime('%Y%m%d')).\
+                                    drop_duplicates(['ann_date','end_date'])             
+            fields = ['ts_code','ann_date','f_ann_date','end_date','report_type','comp_type']
+            for each in fields:
+                income[each] = income[each].apply(lambda x:x.encode('utf8'))                   
+            income.set_index('f_ann_date',inplace = True)
+            income.to_hdf(os.path.join(data_pro_path,'income.h5'),
+                              'income_%s_%s'%(code.split('.')[0],report_type),
+                              mode = 'a',append = True)
+            self._add_item('adj_factor')
+            return income.loc[(income.index >= start_date) & (income.index <= end_date)]
+        
+    def get_balancesheet(self,code,start_date,end_date,report_type = '1'):
+        '''
+        获取资产负债表。
         
         Parameters
         ----------
         code
-            代码
+            ts股票代码
         start_date
             公告开始日期
         end_date
             公告结束日期
         report_type
             公告类型
+            
+        Returns
+        --------
+        DataFrame        
         '''
-        pass
-    
+        if 'balancesheet' in self.local_items:
+            try:
+                return pd.read_hdf(os.path.join(data_pro_path,'balancesheet.h5'),
+                                   'balancesheet_%s_%s'%(code.split('.')[0],report_type),
+                                   where = ["(index>='%s') & (index<='%s')"%(start_date,end_date)]).\
+                                   drop_duplicates(['ann_date','end_date'])
+            except KeyError:
+                balancesheet = self.pro.query('balancesheet',ts_code = code,start_date = '20000101',
+                                              end_date = (dt.date.today()).strftime('%Y%m%d')).\
+                                              drop_duplicates(['ann_date','end_date'])
+                
+                fields = ['ts_code','ann_date','f_ann_date','end_date','report_type','comp_type']
+                for each in fields:
+                    balancesheet[each] = balancesheet[each].apply(lambda x:x.encode('utf8'))                   
+                balancesheet.set_index('f_ann_date',inplace = True)
+                balancesheet.to_hdf(os.path.join(data_pro_path,'balancesheet.h5'),
+                                  'balancesheet_%s_%s'%(code.split('.')[0],report_type),
+                                  mode = 'a',append = True)
+                return balancesheet.loc[(balancesheet.index >= start_date) & (balancesheet.index <= end_date)]  
+        else:
+            balancesheet = self.pro.query('balancesheet',ts_code = code,start_date = '20000101',
+                                              end_date = (dt.date.today()).strftime('%Y%m%d')).\
+                                          drop_duplicates(['ann_date','end_date'])             
+            fields = ['ts_code','ann_date','f_ann_date','end_date','report_type','comp_type']
+            for each in fields:
+                balancesheet[each] = balancesheet[each].apply(lambda x:x.encode('utf8'))                   
+            balancesheet.set_index('f_ann_date',inplace = True)
+            balancesheet.to_hdf(os.path.join(data_pro_path,'balancesheet.h5'),
+                              'balancesheet_%s_%s'%(code.split('.')[0],report_type),
+                              mode = 'a',append = True)
+            self._add_item('adj_factor')
+            return balancesheet.loc[(balancesheet.index >= start_date) & (balancesheet.index <= end_date)]  
+        
+    def get_cashflow(self,code,start_date,end_date,report_type = '1'):
+        '''
+        获取现金流量表。
+        
+        Parameters
+        ----------
+        code
+            ts股票代码
+        start_date
+            公告开始日期
+        end_date
+            公告结束日期
+        report_type
+            公告类型            
+        Returns
+        --------
+        DataFrame        
+        '''
+        if 'cashflow' in self.local_items:
+            try:
+                return pd.read_hdf(os.path.join(data_pro_path,'cashflow.h5'),
+                                   'cashflow_%s_%s'%(code.split('.')[0],report_type),
+                                   where = ["(index>='%s') & (index<='%s')"%(start_date,end_date)]).\
+                                   drop_duplicates(['ann_date','end_date'])
+            except KeyError:
+                cashflow = self.pro.query('cashflow',ts_code = code,start_date = '20000101',
+                                              end_date = (dt.date.today()).strftime('%Y%m%d')).\
+                                          drop_duplicates(['ann_date','end_date'])
+                
+                fields = ['ts_code','ann_date','f_ann_date','end_date','report_type','comp_type']
+                for each in fields:
+                    cashflow[each] = cashflow[each].apply(lambda x:x.encode('utf8'))                   
+                cashflow.set_index('f_ann_date',inplace = True)
+                cashflow.to_hdf(os.path.join(data_pro_path,'cashflow.h5'),
+                                  'cashflow_%s_%s'%(code.split('.')[0],report_type),
+                                  mode = 'a',append = True)
+                return cashflow.loc[(cashflow.index >= start_date) & (cashflow.index <= end_date)]  
+        else:
+            cashflow = self.pro.query('cashflow',ts_code = code,start_date = '20000101',
+                                              end_date = (dt.date.today()).strftime('%Y%m%d')).\
+                                              drop_duplicates(['ann_date','end_date'])             
+            fields = ['ts_code','ann_date','f_ann_date','end_date','report_type','comp_type']
+            for each in fields:
+                cashflow[each] = cashflow[each].apply(lambda x:x.encode('utf8'))                   
+            cashflow.set_index('f_ann_date',inplace = True)
+            cashflow.to_hdf(os.path.join(data_pro_path,'cashflow.h5'),
+                              'cashflow_%s_%s'%(code.split('.')[0],report_type),
+                              mode = 'a',append = True)
+            self._add_item('adj_factor')
+            return cashflow.loc[(cashflow.index >= start_date) & (cashflow.index <= end_date)]         
+      
     #%% update
     def update_stock_basic(self):
         stock_basic = self.pro.query('stock_basic',fields = 'ts_code,symbol,name,list_date,delist_date,list_status')
@@ -302,8 +442,8 @@ class DataPro():
             adj_factor.set_index('trade_date',inplace = True)
             adj_factor.to_hdf(os.path.join(data_pro_path,'adj_factor.h5'),
                               key,mode = 'w',append = True)
-
         
+
     def update_daily_basic(self):
         hdf_store = pd.HDFStore(os.path.join(data_pro_path,'daily_basic.h5'),mode = 'a')
         keys = [each[1:] for each in hdf_store.keys()]
