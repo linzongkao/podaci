@@ -218,16 +218,16 @@ class DataPro():
         '''
         获取利润表。
 		
-		Parameters
-		----------
-		code
-			ts代码
-		start_date
-            公告开始日期
-        end_date
-            公告结束日期
-        report_type
-            公告类型
+    		Parameters
+    		----------
+    		code
+    			ts代码
+    		start_date
+                公告开始日期
+            end_date
+                公告结束日期
+            report_type
+                公告类型
             
         Returns
         --------
@@ -263,7 +263,7 @@ class DataPro():
             income.to_hdf(os.path.join(data_pro_path,'income.h5'),
                               'income_%s_%s'%(code.split('.')[0],report_type),
                               mode = 'a',append = True)
-            self._add_item('adj_factor')
+            self._add_item('income')
             return income.loc[(income.index >= start_date) & (income.index <= end_date)]
         
     def get_balancesheet(self,code,start_date,end_date,report_type = '1'):
@@ -315,7 +315,7 @@ class DataPro():
             balancesheet.to_hdf(os.path.join(data_pro_path,'balancesheet.h5'),
                               'balancesheet_%s_%s'%(code.split('.')[0],report_type),
                               mode = 'a',append = True)
-            self._add_item('adj_factor')
+            self._add_item('balancesheet')
             return balancesheet.loc[(balancesheet.index >= start_date) & (balancesheet.index <= end_date)]  
         
     def get_cashflow(self,code,start_date,end_date,report_type = '1'):
@@ -366,9 +366,87 @@ class DataPro():
             cashflow.to_hdf(os.path.join(data_pro_path,'cashflow.h5'),
                               'cashflow_%s_%s'%(code.split('.')[0],report_type),
                               mode = 'a',append = True)
-            self._add_item('adj_factor')
+            self._add_item('cashflow')
             return cashflow.loc[(cashflow.index >= start_date) & (cashflow.index <= end_date)]         
       
+    def get_index_basic(self,market):
+        '''
+        获取指数列表。
+        
+        Parameters
+        -----------
+        market
+            交易所或服务商代码
+        '''
+        if 'index_basic' in self.local_items:
+            try:
+                return pd.read_hdf(os.path.join(data_pro_path,'index_basic.h5'),'%s'%market)
+            except KeyError:
+                fields = 'ts_code,name,fullname,market,publisher,index_type,category,base_date,list_date,weight_rule,desc,exp_date'
+                index_basic = self.pro.query('index_basic',market = market,fields = fields)
+                for each in fields.split(','):
+                    index_basic[each] = index_basic[each].apply(lambda x:None if x is None else x.encode('utf8'))
+                index_basic.to_hdf(os.path.join(data_pro_path,'index_basic.h5'),'%s'%market,
+                                   mode = 'w',append = True)
+                return index_basic                
+        else:
+            fields = 'ts_code,name,fullname,market,publisher,index_type,category,base_date,list_date,weight_rule,desc,exp_date'
+            index_basic = self.pro.query('index_basic',market = market,fields = fields)
+            for each in fields.split(','):
+                index_basic[each] = index_basic[each].apply(lambda x:None if x is None else x.encode('utf8'))
+            index_basic.to_hdf(os.path.join(data_pro_path,'index_basic.h5'),'%s'%market,
+                               mode = 'w',append = True)
+
+            self._add_item('index_basic')
+            return index_basic
+        
+    def get_index_daily(self,code,start_date,end_date):
+        '''
+        获取指数日线行情。
+        
+        Parameters
+        ----------
+        code
+            ts股票代码
+        start_date
+            开始日期
+        end_date
+            结束日期
+            
+        Returns
+        --------
+        DataFrame
+        '''
+        if 'index_daily' in self.local_items:
+            try:
+                return pd.read_hdf(os.path.join(data_pro_path,'index_daily.h5'),
+                                   'index_daily_%s'%('_'.join(code.split('.'))),                
+                                   where = ["(index>='%s') & (index<='%s')"%(start_date,end_date)])
+            except KeyError:
+                index_daily = self.pro.query('index_daily',ts_code = code,start_date = '20000101',
+                                       end_date = (dt.date.today()).strftime('%Y%m%d'))
+                fields = ['ts_code','trade_date']
+                for each in fields:
+                    index_daily[each] = index_daily[each].apply(lambda x:x.encode('utf8'))
+                index_daily.set_index('trade_date',inplace = True)
+                index_daily.to_hdf(os.path.join(data_pro_path,'index_daily.h5'),
+                                   'index_daily_%s'%('_'.join(code.split('.'))),
+                                   mode = 'a',append = True)
+                return index_daily.loc[(index_daily.index >= start_date) & (index_daily.index <= end_date)]
+            
+        else:
+            index_daily = self.pro.query('index_daily',ts_code = code,start_date = '20000101',
+                                       end_date = (dt.date.today()).strftime('%Y%m%d'))
+            fields = ['ts_code','trade_date']
+            for each in fields:
+                index_daily[each] = index_daily[each].apply(lambda x:x.encode('utf8'))
+            index_daily.set_index('trade_date',inplace = True)
+            index_daily.to_hdf(os.path.join(data_pro_path,'index_daily.h5'),
+                               'index_daily_%s'%('_'.join(code.split('.'))),
+                               mode = 'a',append = True)
+            self._add_item('index_daily')
+            return index_daily.loc[(index_daily.index >= start_date) & (index_daily.index <= end_date)]
+        
     #%% update
     def update_stock_basic(self):
         stock_basic = self.pro.query('stock_basic',fields = 'ts_code,symbol,name,list_date,delist_date,list_status')
