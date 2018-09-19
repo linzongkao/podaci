@@ -117,19 +117,20 @@ class DataPro():
         if 'daily' in self.local_items:
             try:
                 return pd.read_hdf(os.path.join(data_pro_path,'daily.h5'),'daily_%s'%code.split('.')[0],                
-                                   where = ["(index>='%s') & (index<='%s')"%(start_date,end_date)])
+                                   where = ["(index>='%s') & (index<='%s')"%(start_date,end_date)]).drop_duplicates()
             except KeyError:
-                daily = self.pro.query('daily',ts_code = code,start_date = '19910101',
+                daily = self.pro.query('daily',ts_code = code,start_date = '20000101',
                                        end_date = (dt.date.today()).strftime('%Y%m%d'))
                 fields = ['ts_code','trade_date']
                 for each in fields:
                     daily[each] = daily[each].apply(lambda x:x.encode('utf8'))
                 daily.set_index('trade_date',inplace = True)
-                daily.to_hdf(os.path.join(data_pro_path,'daily.h5'),'daily_%s'%code.split('.')[0],mode = 'a',append = True)
+                daily.to_hdf(os.path.join(data_pro_path,'daily.h5'),'daily_%s'%code.split('.')[0],
+                             mode = 'a',append = True)
                 return daily.loc[(daily.index >= start_date) & (daily.index <= end_date)]
             
         else:
-            daily = self.pro.query('daily',ts_code = code,start_date = '19910101',
+            daily = self.pro.query('daily',ts_code = code,start_date = '20000101',
                                        end_date = (dt.date.today()).strftime('%Y%m%d'))
             fields = ['ts_code','trade_date']
             for each in fields:
@@ -512,6 +513,7 @@ class DataPro():
         for idx,code in enumerate(codes):
             key = keys[idx]
             adj_factor = self.pro.query('adj_factor',ts_code = code,trade_date = '')
+            
             if len(adj_factor) == 0:
                 continue
             
