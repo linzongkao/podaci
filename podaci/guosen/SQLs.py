@@ -319,3 +319,25 @@ WHERE trade_date >= '{start_date}'
 AND trade_date <= '{end_date}'
 AND stock_code IN ({stock_universe})
 '''
+
+SQL_GET_FUNDS_DAILY_RET = '''
+SELECT [trade_code]
+,[trade_date]
+,[daily_return]
+,[investment_type]
+FROM [sds209635243_db].[dbo].[fund_hist_daily_return]
+WHERE trade_code IN ({universe_str})
+AND trade_date >= '{start_date}'
+AND trade_date <= '{end_date}'
+'''
+
+
+SQL_GET_ALL_FUNDS_DAILY_RET = '''
+SELECT [trade_code]
+,[trade_date]
+,[daily_return]
+,[investment_type]
+FROM [sds209635243_db].[dbo].[fund_hist_daily_return]
+WHERE trade_date >= '{start_date}'
+AND trade_date <= '{end_date}'
+'''

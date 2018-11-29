@@ -25,7 +25,9 @@ from SQLs import (SQL_GET_SW_INDEX_CLOSE,
                   SQL_GET_STOCK_DAILY_DATA1,
                   SQL_GET_STOCK_DAILY_DATA2,
                   SQL_GET_STOCK_MIN_CLOSE,
-                  SQL_GET_STOCK_FEATURES)
+                  SQL_GET_STOCK_FEATURES,
+                  SQL_GET_FUNDS_DAILY_RET,
+                  SQL_GET_ALL_FUNDS_DAILY_RET)
 from consts import SW_INDUSTRY_FIRST_CODE
 
 engine_ld_obj = DatabaseEngine('ld')
@@ -306,6 +308,34 @@ def get_stock_features(start_date,end_date,stock_universe = ''):
                                                      stock_universe = stock_universe),
         engine_gb)
     
+def get_funds_daily_ret(fund_universe,start_date,end_date):
+    '''
+    获取基金池基金指定时间区间内的日收益率。
+    
+    Parameters
+    --------------
+    fund_universe
+        list or None(all)
+    start_date
+        开始日期,yyyymmdd
+    end_date
+        结束日期,yyyymmdd
+        
+    Returns
+    -------
+    DataFrame
+    '''
+    if fund_universe is not None:
+        universe_str = ','.join(["'%s'"%each for each in fund_universe])
+        return pd.read_sql(SQL_GET_FUNDS_DAILY_RET.format(universe_str = universe_str,
+                                                          start_date = start_date,
+                                                          end_date = end_date),
+            engine_xiaoyi)
+    else:
+        return pd.read_sql(SQL_GET_ALL_FUNDS_DAILY_RET.format(start_date = start_date,
+                                                          end_date = end_date),
+            engine_xiaoyi)
+
 #%% 通用数据获取
 def get_data(sql_statement,db_name):
     '''
@@ -393,4 +423,5 @@ if __name__ == '__main__':
 #    data = get_stock_basic()
 #    data1 = get_stock_daily_data('20180901','20180905',['000860'])
 #    data2 = get_stock_min_data_close('20180901','20180905',['000860'],2018)
-    data3 = get_stock_features('20180101','20180201',['000860'])
+#    data3 = get_stock_features('20180101','20180201',['000860'])
+    data4 = get_funds_daily_ret(['502056'],'20180101','20181231')

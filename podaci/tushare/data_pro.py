@@ -62,6 +62,9 @@ class DataPro():
                 f.write(',%s'%item_name)
         self.local_items.append(item_name)
         
+    def _update_print(self,item_name):
+        print '[UPDATE]:%s'%item_name
+        
     #%% api
     def get_stock_universe(self):
         '''
@@ -74,7 +77,7 @@ class DataPro():
             stock_basic = self.pro.query('stock_basic',exchange_id='', is_hs='',
                                          fields = fields)
             for each in fields.split(','):
-                stock_basic[each] = stock_basic[each].apply(lambda x:None if x is None else x.encode('utf8'))
+                stock_basic.loc[:,each] = stock_basic[each].apply(lambda x:None if x is None else x.encode('utf8'))
             stock_basic.to_hdf(os.path.join(data_pro_path,'stock_basic.h5'),'stock_basic',
                                mode = 'w',append = True)
 
@@ -91,8 +94,8 @@ class DataPro():
             trade_cal = self.pro.query('trade_cal',start_date = '20000101',
                                        end_date = (dt.date.today() + dt.timedelta(days = 365)).strftime('%Y%m%d'),
                                        is_open = 1)
-            trade_cal['exchange_id'] = trade_cal['exchange_id'].apply(lambda x:x.encode('utf8'))
-            trade_cal['cal_date'] = trade_cal['cal_date'].apply(lambda x:x.encode('utf8'))
+            trade_cal.loc[:,'exchange_id'] = trade_cal['exchange_id'].apply(lambda x:x.encode('utf8'))
+            trade_cal.loc[:,'cal_date'] = trade_cal['cal_date'].apply(lambda x:x.encode('utf8'))
             trade_cal.to_hdf(os.path.join(data_pro_path,'trade_cal.h5'),'trade_cal',mode = 'w',append = True)
             self._add_item('trade_cal')
             return trade_cal
@@ -123,7 +126,7 @@ class DataPro():
                                        end_date = (dt.date.today()).strftime('%Y%m%d'))
                 fields = ['ts_code','trade_date']
                 for each in fields:
-                    daily[each] = daily[each].apply(lambda x:x.encode('utf8'))
+                    daily.loc[:,each] = daily[each].apply(lambda x:x.encode('utf8'))
                 daily.set_index('trade_date',inplace = True)
                 daily.to_hdf(os.path.join(data_pro_path,'daily.h5'),'daily_%s'%code.split('.')[0],
                              mode = 'a',append = True)
@@ -134,7 +137,7 @@ class DataPro():
                                        end_date = (dt.date.today()).strftime('%Y%m%d'))
             fields = ['ts_code','trade_date']
             for each in fields:
-                daily[each] = daily[each].apply(lambda x:x.encode('utf8'))
+                daily.loc[:,each] = daily[each].apply(lambda x:x.encode('utf8'))
             daily.set_index('trade_date',inplace = True)
             daily.to_hdf(os.path.join(data_pro_path,'daily.h5'),'daily_%s'%code.split('.')[0],mode = 'a',append = True)
             self._add_item('daily')
@@ -153,7 +156,7 @@ class DataPro():
                 
                 fields = ['ts_code','trade_date']
                 for each in fields:
-                    adj_factor[each] = adj_factor[each].apply(lambda x:x.encode('utf8'))                   
+                    adj_factor.loc[:,each] = adj_factor[each].apply(lambda x:x.encode('utf8'))                   
                 adj_factor.set_index('trade_date',inplace = True)
                 adj_factor.to_hdf(os.path.join(data_pro_path,'adj_factor.h5'),
                                   'adj_factor_%s'%code.split('.')[0],mode = 'a',append = True)
@@ -163,7 +166,7 @@ class DataPro():
             
             fields = ['ts_code','trade_date']
             for each in fields:
-                adj_factor[each] = adj_factor[each].apply(lambda x:x.encode('utf8'))
+                adj_factor.loc[:,each] = adj_factor[each].apply(lambda x:x.encode('utf8'))
                 
             adj_factor.set_index('trade_date',inplace = True)
             adj_factor.to_hdf(os.path.join(data_pro_path,'adj_factor.h5'),
@@ -198,7 +201,7 @@ class DataPro():
                                        end_date = (dt.date.today()).strftime('%Y%m%d'))
                 fields = ['ts_code','trade_date']
                 for each in fields:
-                    daily_basic[each] = daily_basic[each].apply(lambda x:x.encode('utf8'))
+                    daily_basic.loc[:,each] = daily_basic[each].apply(lambda x:x.encode('utf8'))
                 daily_basic.set_index('trade_date',inplace = True)
                 daily_basic.to_hdf(os.path.join(data_pro_path,'daily_basic.h5'),'daily_basic_%s'%code.split('.')[0],mode = 'a',append = True)
                 return daily_basic.loc[(daily_basic.index >= start_date) & (daily_basic.index <= end_date)]
@@ -208,7 +211,7 @@ class DataPro():
                                        end_date = (dt.date.today()).strftime('%Y%m%d'))
             fields = ['ts_code','trade_date']
             for each in fields:
-                daily_basic[each] = daily_basic[each].apply(lambda x:x.encode('utf8'))
+                daily_basic.loc[:,each] = daily_basic[each].apply(lambda x:x.encode('utf8'))
             daily_basic.set_index('trade_date',inplace = True)
             daily_basic.to_hdf(os.path.join(data_pro_path,'daily_basic.h5'),'daily_basic_%s'%code.split('.')[0],
                                mode = 'a',append = True)
@@ -247,7 +250,7 @@ class DataPro():
                 
                 fields = ['ts_code','ann_date','f_ann_date','end_date','report_type','comp_type']
                 for each in fields:
-                    income[each] = income[each].apply(lambda x:x.encode('utf8'))                   
+                    income.loc[:,each] = income[each].apply(lambda x:x.encode('utf8'))                   
                 income.set_index('f_ann_date',inplace = True)
                 income.to_hdf(os.path.join(data_pro_path,'income.h5'),
                                   'income_%s_%s'%(code.split('.')[0],report_type),
@@ -259,7 +262,7 @@ class DataPro():
                                     drop_duplicates(['ann_date','end_date'])             
             fields = ['ts_code','ann_date','f_ann_date','end_date','report_type','comp_type']
             for each in fields:
-                income[each] = income[each].apply(lambda x:x.encode('utf8'))                   
+                income.loc[:,each] = income[each].apply(lambda x:x.encode('utf8'))                   
             income.set_index('f_ann_date',inplace = True)
             income.to_hdf(os.path.join(data_pro_path,'income.h5'),
                               'income_%s_%s'%(code.split('.')[0],report_type),
@@ -293,13 +296,13 @@ class DataPro():
                                    where = ["(index>='%s') & (index<='%s')"%(start_date,end_date)]).\
                                    drop_duplicates(['ann_date','end_date'])
             except KeyError:
-                balancesheet = self.pro.query('balancesheet',ts_code = code,start_date = '20000101',
+                balancesheet = self.pro.query('balancesheet',ts_code = code,start_date = '20050101',
                                               end_date = (dt.date.today()).strftime('%Y%m%d')).\
                                               drop_duplicates(['ann_date','end_date'])
                 
                 fields = ['ts_code','ann_date','f_ann_date','end_date','report_type','comp_type']
                 for each in fields:
-                    balancesheet[each] = balancesheet[each].apply(lambda x:x.encode('utf8'))                   
+                    balancesheet.loc[:,each] = balancesheet[each].apply(lambda x:x.encode('utf8'))                   
                 balancesheet.set_index('f_ann_date',inplace = True)
                 balancesheet.to_hdf(os.path.join(data_pro_path,'balancesheet.h5'),
                                   'balancesheet_%s_%s'%(code.split('.')[0],report_type),
@@ -311,7 +314,7 @@ class DataPro():
                                           drop_duplicates(['ann_date','end_date'])             
             fields = ['ts_code','ann_date','f_ann_date','end_date','report_type','comp_type']
             for each in fields:
-                balancesheet[each] = balancesheet[each].apply(lambda x:x.encode('utf8'))                   
+                balancesheet.loc[:,each] = balancesheet[each].apply(lambda x:x.encode('utf8'))                   
             balancesheet.set_index('f_ann_date',inplace = True)
             balancesheet.to_hdf(os.path.join(data_pro_path,'balancesheet.h5'),
                               'balancesheet_%s_%s'%(code.split('.')[0],report_type),
@@ -350,7 +353,7 @@ class DataPro():
                 
                 fields = ['ts_code','ann_date','f_ann_date','end_date','report_type','comp_type']
                 for each in fields:
-                    cashflow[each] = cashflow[each].apply(lambda x:x.encode('utf8'))                   
+                    cashflow.loc[:,each] = cashflow[each].apply(lambda x:x.encode('utf8'))                   
                 cashflow.set_index('f_ann_date',inplace = True)
                 cashflow.to_hdf(os.path.join(data_pro_path,'cashflow.h5'),
                                   'cashflow_%s_%s'%(code.split('.')[0],report_type),
@@ -362,7 +365,7 @@ class DataPro():
                                               drop_duplicates(['ann_date','end_date'])             
             fields = ['ts_code','ann_date','f_ann_date','end_date','report_type','comp_type']
             for each in fields:
-                cashflow[each] = cashflow[each].apply(lambda x:x.encode('utf8'))                   
+                cashflow.loc[:,each] = cashflow[each].apply(lambda x:x.encode('utf8'))                   
             cashflow.set_index('f_ann_date',inplace = True)
             cashflow.to_hdf(os.path.join(data_pro_path,'cashflow.h5'),
                               'cashflow_%s_%s'%(code.split('.')[0],report_type),
@@ -386,7 +389,7 @@ class DataPro():
                 fields = 'ts_code,name,fullname,market,publisher,index_type,category,base_date,list_date,weight_rule,desc,exp_date'
                 index_basic = self.pro.query('index_basic',market = market,fields = fields)
                 for each in fields.split(','):
-                    index_basic[each] = index_basic[each].apply(lambda x:None if x is None else x.encode('utf8'))
+                    index_basic.loc[:,each] = index_basic[each].apply(lambda x:None if x is None else x.encode('utf8'))
                 index_basic.to_hdf(os.path.join(data_pro_path,'index_basic.h5'),'%s'%market,
                                    mode = 'w',append = True)
                 return index_basic                
@@ -394,7 +397,7 @@ class DataPro():
             fields = 'ts_code,name,fullname,market,publisher,index_type,category,base_date,list_date,weight_rule,desc,exp_date'
             index_basic = self.pro.query('index_basic',market = market,fields = fields)
             for each in fields.split(','):
-                index_basic[each] = index_basic[each].apply(lambda x:None if x is None else x.encode('utf8'))
+                index_basic.loc[:,each] = index_basic[each].apply(lambda x:None if x is None else x.encode('utf8'))
             index_basic.to_hdf(os.path.join(data_pro_path,'index_basic.h5'),'%s'%market,
                                mode = 'w',append = True)
 
@@ -428,7 +431,7 @@ class DataPro():
                                        end_date = (dt.date.today()).strftime('%Y%m%d'))
                 fields = ['ts_code','trade_date']
                 for each in fields:
-                    index_daily[each] = index_daily[each].apply(lambda x:x.encode('utf8'))
+                    index_daily.loc[:,each] = index_daily[each].apply(lambda x:x.encode('utf8'))
                 index_daily.set_index('trade_date',inplace = True)
                 index_daily.to_hdf(os.path.join(data_pro_path,'index_daily.h5'),
                                    'index_daily_%s'%('_'.join(code.split('.'))),
@@ -440,7 +443,7 @@ class DataPro():
                                        end_date = (dt.date.today()).strftime('%Y%m%d'))
             fields = ['ts_code','trade_date']
             for each in fields:
-                index_daily[each] = index_daily[each].apply(lambda x:x.encode('utf8'))
+                index_daily.loc[:,each] = index_daily[each].apply(lambda x:x.encode('utf8'))
             index_daily.set_index('trade_date',inplace = True)
             index_daily.to_hdf(os.path.join(data_pro_path,'index_daily.h5'),
                                'index_daily_%s'%('_'.join(code.split('.'))),
@@ -450,20 +453,28 @@ class DataPro():
         
     #%% update
     def update_stock_basic(self):
+        self._update_print('stock_basic')
         stock_basic = self.pro.query('stock_basic',fields = 'ts_code,symbol,name,list_date,delist_date,list_status')
         fields = 'ts_code,symbol,name,list_date,delist_date,list_status'
         for each in fields.split(','):
-            stock_basic[each] = stock_basic[each].apply(lambda x:x.encode('utf8'))            
-        stock_basic.to_hdf(os.path.join(data_pro_path,'stock_basic.h5'),mode = 'w',append = True) 
+            stock_basic.loc[:,each] = stock_basic[each].apply(lambda x:None if x is None else x.encode('utf8'))            
+        stock_basic.to_hdf(os.path.join(data_pro_path,'stock_basic.h5'),'stock_basic',mode = 'w',append = True) 
     
     def update_trade_calendar(self):
-        trade_cal = self.pro.query('trade_cal',start_date = '19910101',
+        self._update_print('trade_calendar')
+        trade_cal = self.get_trade_calendar()
+        latest_date = trade_cal['cal_date'].max()
+        start_date = pd.to_datetime(latest_date) + dt.timedelta(days = 1)
+        trade_cal = self.pro.query('trade_cal',start_date = start_date.strftime('%Y%m%d'),
                                        end_date = (dt.date.today() + dt.timedelta(days = 365)).strftime('%Y%m%d'))
-        trade_cal['exchange_id'] = trade_cal['exchange_id'].apply(lambda x:x.encode('utf8'))
-        trade_cal['cal_date'] = trade_cal['cal_date'].apply(lambda x:x.encode('utf8'))
-        trade_cal.to_hdf(os.path.join(data_pro_path,'trade_cal.h5'),'trade_cal',mode = 'w',append = True)
+        if len(trade_cal) == 0:
+            return
+        trade_cal.loc[:,'exchange_id'] = trade_cal['exchange_id'].apply(lambda x:x.encode('utf8'))
+        trade_cal.loc[:,'cal_date'] = trade_cal['cal_date'].apply(lambda x:x.encode('utf8'))
+        trade_cal.to_hdf(os.path.join(data_pro_path,'trade_cal.h5'),'trade_cal',mode = 'a',append = True)
 
     def update_daily(self):
+        self._update_print('daily')
         hdf_store = pd.HDFStore(os.path.join(data_pro_path,'daily.h5'),mode = 'a')
         keys = [each[1:] for each in hdf_store.keys()]
         def add_suffix(x):
@@ -490,13 +501,14 @@ class DataPro():
                 continue
             
             for each in fields:
-                daily[each] = daily[each].apply(lambda x:x.encode('utf8'))
+                daily.loc[:,each] = daily[each].apply(lambda x:x.encode('utf8'))
             daily.set_index('trade_date',inplace = True)
             hdf_store.append(key,daily)
         hdf_store.flush()
         hdf_store.close()
         
     def update_adj_factor(self):
+        self._update_print('adj_factor')
         hdf_store = pd.HDFStore(os.path.join(data_pro_path,'adj_factor.h5'),mode = 'a')
         keys = [each[1:] for each in hdf_store.keys()]
         
@@ -518,42 +530,48 @@ class DataPro():
                 continue
             
             for each in fields:
-                adj_factor[each] = adj_factor[each].apply(lambda x:x.encode('utf8'))
+                adj_factor.loc[:,each] = adj_factor[each].apply(lambda x:x.encode('utf8'))
             adj_factor.set_index('trade_date',inplace = True)
             adj_factor.to_hdf(os.path.join(data_pro_path,'adj_factor.h5'),
                               key,mode = 'w',append = True)
         
 
     def update_daily_basic(self):
+        self._update_print('daily_basic')
         hdf_store = pd.HDFStore(os.path.join(data_pro_path,'daily_basic.h5'),mode = 'a')
         keys = [each[1:] for each in hdf_store.keys()]
+        print keys
         def add_suffix(x):
             if x.startswith('0') or x.startswith('3'):
                 return x + '.SZ'
             elif x.startswith('6'):
                 return x + '.SH'
-        codes = map(add_suffix,
-                    [each.split('_')[2] for each in hdf_store.keys()])
+        codes = map(add_suffix,[each.split('_')[2] for each in hdf_store.keys()])
         
         fields = ['ts_code','trade_date']
         for idx,code in enumerate(codes):
-            key = keys[idx]
-            last_trade_date = hdf_store[key].index.max()
-            start_date = dt.datetime.strptime(last_trade_date,'%Y%m%d') + dt.timedelta(days = 1)
-            start_date = start_date.strftime('%Y%m%d')
-            
-            if start_date >  dt.date.today().strftime('%Y%m%d'):
-                continue
-            daily_basic = self.pro.query('daily_basic',ts_code = code,
-                                      start_date = start_date,
-                                      end_date = dt.date.today().strftime('%Y%m%d'))
-            if len(daily_basic) == 0:
-                continue
-            
-            for each in fields:
-                daily_basic[each] = daily_basic[each].apply(lambda x:x.encode('utf8'))
-            daily_basic.set_index('trade_date',inplace = True)
-            hdf_store.append(key,daily_basic)
+            try:
+                key = keys[idx]
+                last_trade_date = hdf_store[key].index.max()
+                start_date = dt.datetime.strptime(last_trade_date,'%Y%m%d') + dt.timedelta(days = 1)
+                start_date = start_date.strftime('%Y%m%d')
+                
+                if start_date >  dt.date.today().strftime('%Y%m%d'):
+                    continue
+                daily_basic = self.pro.query('daily_basic',ts_code = code,
+                                          start_date = start_date,
+                                          end_date = dt.date.today().strftime('%Y%m%d'))
+
+                if len(daily_basic) == 0:
+                    continue
+                
+                for each in fields:
+                    daily_basic.loc[:,each] = daily_basic[each].apply(lambda x:x.encode('utf8'))
+                daily_basic.set_index('trade_date',inplace = True)
+                hdf_store.append(key,daily_basic)
+            except ValueError:
+                print 'Error at %s : data not available'%code           
+                
         hdf_store.flush()
         hdf_store.close() 
         
