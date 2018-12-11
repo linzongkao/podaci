@@ -6,6 +6,7 @@ Created on Wed Aug 22 13:07:06 2018
 """
 
 # data.py
+from __future__ import print_function
 import datetime as dt
 import pandas as pd
 from database_engine import DatabaseEngine
@@ -27,7 +28,9 @@ from SQLs import (SQL_GET_SW_INDEX_CLOSE,
                   SQL_GET_STOCK_MIN_CLOSE,
                   SQL_GET_STOCK_FEATURES,
                   SQL_GET_FUNDS_DAILY_RET,
-                  SQL_GET_ALL_FUNDS_DAILY_RET)
+                  SQL_GET_ALL_FUNDS_DAILY_RET,
+                  SQL_GET_INDEX_DAILY,
+                  SQL_GET_RISK_FREE_RATE)
 from consts import SW_INDUSTRY_FIRST_CODE
 
 engine_ld_obj = DatabaseEngine('ld')
@@ -48,123 +51,7 @@ engine_xiaoyi40_obj = DatabaseEngine('xiaoyi40')
 engine_xiaoyi40 = engine_xiaoyi40_obj.get_engine()
 session_xiaoyi40 = engine_xiaoyi40_obj.get_session()
 
-#%% 数据读取
-def get_sw_industry_index(start_date,end_date):
-    '''
-    获取申万一级行业指数收盘值。
-    '''
-    codes = ["\'" + each + "\'" for each in SW_INDUSTRY_FIRST_CODE ]
-    codes = ",".join(codes)
-    data = pd.read_sql(SQL_GET_SW_INDEX_CLOSE.format(start_date = start_date,
-                                                     end_date = end_date,
-                                                     codes = codes),engine_ld)
-    return data.drop_duplicates(['code','trade_date'])
-
-def get_fund_hold_stock_top10(end_date):
-    '''
-    获取截止日期前全市场基金最新持仓。
-    
-    Parameters
-    ------------
-    end_date
-        YYYYMMDD,截止日期
-        
-    Notes
-    --------
-    加入了end_date_adj来控制披露信息尽量接近end_date,并且提高查询速度
-    '''
-    end_date_adj = dt.datetime.strptime(end_date,'%Y%m%d') - dt.timedelta(days = 200)
-    end_date_adj = end_date_adj.strftime('%Y%m%d')
-    
-    data = pd.read_sql(SQL_GET_FUND_HOLD_STOCK.format(end_date = end_date,
-                                                      end_date_adj = end_date_adj),
-        engine_xiaoyi)
-    return data
-
-def get_stock_sw_industry(target_date):
-    '''
-    获取目标日期申万一级成分.
-    
-    Parameters
-    ----------
-    target_date
-        YYYYMMDD
-    '''
-    from consts import SW_INDUSTRY_FIRST_CODE,SW_INDUSTRY_FIRST_NAME
-    ser = pd.Series(SW_INDUSTRY_FIRST_CODE,index = SW_INDUSTRY_FIRST_NAME)
-    ser.name = 'level_1_code'
-    data = pd.read_sql(SQL_GET_SW_INDEX_STOCK_COMPONENTS.format(target_date = target_date),
-                       engine_ld)
-    data_adj = data.join(ser,on = 'level_1')
-    return data_adj
-
-def get_fund_sw_infer(target_date):
-    '''
-    获取目标日期基金推断申万行业比例
-    
-    Parameters
-    ----------
-    target_date
-        YYYYMMDD
-    '''
-    return pd.read_sql(SQL_GET_FUND_INFER_INDUSTRY%target_date,engine_xiaoyi)
-
-def get_fund_sw_infer_current():
-    '''
-    获取最新基金推断申万行业比例
-    '''
-    return pd.read_sql(SQL_GET_FUND_INFER_INDUSTRY_CURRENT,engine_xiaoyi)
-    
-def get_fund_basic_info(fund_type_list):
-    '''
-    获取基金基本信息.
-    
-    Parameters
-    -----------
-    fund_type_list
-        list of str 基金类型
-        股票型,混合型,债券型,货币市场型
-    '''
-    fund_types = ["investment_type = '%s'"%each for each in fund_type_list]
-    sql = SQL_GET_FUND_BASIC + ' or '.join(fund_types)
-    return pd.read_sql(sql,engine_xiaoyi)
-
-def get_fund_score():
-    '''
-    获取基金评分.
-    '''
-    return pd.read_sql(SQL_GET_FUND_SCORE,engine_xiaoyi)
-
-
-def get_fund_net_value(trade_code,start_date,end_date):
-    '''
-    获取基金净值.
-    
-    Parameters
-    ----------
-    trade_code
-        基金代码
-    start_date
-        str
-    end_date
-        str
-    '''
-    return pd.read_sql(SQL_GET_FUND_NET_VALUE.format(trade_code = trade_code,
-                                                     start_date = start_date,
-                                                     end_date = end_date),
-        engine_xiaoyi)
-    
-def get_funds_net_value(funds_universe,start_date,end_date):
-    '''
-    获取多只基金净值。
-    '''
-    funds_universe = ["'%s'"%each for each in funds_universe]
-    funds_universe = ",".join(funds_universe)
-    return pd.read_sql(SQL_GET_FUNDS_NET_VALUE.format(funds_universe = funds_universe,
-                                                      start_date = start_date,
-                                                      end_date = end_date),
-        engine_xiaoyi)
-        
+#%% 基础
 def get_trade_calendar(start_date = '20170101',
                        end_date = dt.date.today().strftime('%Y%m%d')):
     '''
@@ -174,32 +61,7 @@ def get_trade_calendar(start_date = '20170101',
                                                      end_date = end_date),
     engine_ld).drop_duplicates('trade_date')
     
-
-def get_fund_manager(fund_universe,trade_date):
-    '''
-    获取基金对应基金在某日经理列表.
-    '''
-    fund_universe_adj = ["'%s'"%each for each in fund_universe]
-    funds = ','.join(fund_universe_adj)
-    return pd.read_sql(SQL_GET_FUND_MANAGER.format(fund_universe = funds,
-                                                   trade_date = trade_date),engine_xiaoyi)
-def get_manager_fund(managers_ids,trade_date):
-    '''
-    根据基金经理id获取某日其管理的基金列表。
-    
-    Parameters
-    ------------
-    managers_ids
-        list
-    trade_date
-        YYYYMMDD
-    '''
-    managers_ids = ["'%s'"%each for each in managers_ids]
-    managers_ids = ",".join(managers_ids)
-    return pd.read_sql(SQL_GET_MANAGER_FUND.format(managers_ids = managers_ids,
-                                                   trade_date = trade_date),
-        engine_xiaoyi)
-    
+#%% 股票
 def get_stock_basic():
     '''
     获取当前上市公司股票基础列表。
@@ -308,6 +170,170 @@ def get_stock_features(start_date,end_date,stock_universe = ''):
                                                      stock_universe = stock_universe),
         engine_gb)
     
+#%% 指数
+def get_index_daily(index_code,start_date,end_date):
+    '''
+    获取指数日行情。
+    
+    Parameters
+    -----------
+    index_code
+        指数代码
+    start_date
+        开始日期
+    end_date
+        结束日期
+        
+    Returns
+    -------
+    DataFrame
+    '''
+    data = pd.read_sql(SQL_GET_INDEX_DAILY.format(index_code = index_code,start_date = start_date,end_date = end_date),engine_ld)
+    data = data.sort_values('trade_date',ascending = True)
+    data = data.drop_duplicates(subset = ['trade_date'])
+    return data
+
+def get_sw_industry_index(start_date,end_date):
+    '''
+    获取申万一级行业指数收盘值。
+    '''
+    codes = ["\'" + each + "\'" for each in SW_INDUSTRY_FIRST_CODE ]
+    codes = ",".join(codes)
+    data = pd.read_sql(SQL_GET_SW_INDEX_CLOSE.format(start_date = start_date,
+                                                     end_date = end_date,
+                                                     codes = codes),engine_ld)
+    return data.drop_duplicates(['code','trade_date'])
+
+def get_stock_sw_industry(target_date):
+    '''
+    获取目标日期申万一级成分.
+    
+    Parameters
+    ----------
+    target_date
+        YYYYMMDD
+    '''
+    from consts import SW_INDUSTRY_FIRST_CODE,SW_INDUSTRY_FIRST_NAME
+    ser = pd.Series(SW_INDUSTRY_FIRST_CODE,index = SW_INDUSTRY_FIRST_NAME)
+    ser.name = 'level_1_code'
+    data = pd.read_sql(SQL_GET_SW_INDEX_STOCK_COMPONENTS.format(target_date = target_date),
+                       engine_ld)
+    data_adj = data.join(ser,on = 'level_1')
+    return data_adj
+
+#%% 基金
+def get_fund_hold_stock_top10(end_date):
+    '''
+    获取截止日期前全市场基金最新持仓。
+    
+    Parameters
+    ------------
+    end_date
+        YYYYMMDD,截止日期
+        
+    Notes
+    --------
+    加入了end_date_adj来控制披露信息尽量接近end_date,并且提高查询速度
+    '''
+    end_date_adj = dt.datetime.strptime(end_date,'%Y%m%d') - dt.timedelta(days = 200)
+    end_date_adj = end_date_adj.strftime('%Y%m%d')
+    
+    data = pd.read_sql(SQL_GET_FUND_HOLD_STOCK.format(end_date = end_date,
+                                                      end_date_adj = end_date_adj),
+        engine_xiaoyi)
+    return data
+def get_fund_sw_infer(target_date):
+    '''
+    获取目标日期基金推断申万行业比例
+    
+    Parameters
+    ----------
+    target_date
+        YYYYMMDD
+    '''
+    return pd.read_sql(SQL_GET_FUND_INFER_INDUSTRY%target_date,engine_xiaoyi)
+
+def get_fund_sw_infer_current():
+    '''
+    获取最新基金推断申万行业比例
+    '''
+    return pd.read_sql(SQL_GET_FUND_INFER_INDUSTRY_CURRENT,engine_xiaoyi)
+    
+def get_fund_basic_info(fund_type_list):
+    '''
+    获取基金基本信息.
+    
+    Parameters
+    -----------
+    fund_type_list
+        list of str 基金类型
+        股票型,混合型,债券型,货币市场型
+    '''
+    fund_types = ["investment_type = '%s'"%each for each in fund_type_list]
+    sql = SQL_GET_FUND_BASIC + ' or '.join(fund_types)
+    return pd.read_sql(sql,engine_xiaoyi)
+
+def get_fund_score():
+    '''
+    获取基金评分.
+    '''
+    return pd.read_sql(SQL_GET_FUND_SCORE,engine_xiaoyi)
+
+
+def get_fund_net_value(trade_code,start_date,end_date):
+    '''
+    获取基金净值.
+    
+    Parameters
+    ----------
+    trade_code
+        基金代码
+    start_date
+        str
+    end_date
+        str
+    '''
+    return pd.read_sql(SQL_GET_FUND_NET_VALUE.format(trade_code = trade_code,
+                                                     start_date = start_date,
+                                                     end_date = end_date),
+        engine_xiaoyi)
+    
+def get_funds_net_value(funds_universe,start_date,end_date):
+    '''
+    获取多只基金净值。
+    '''
+    funds_universe = ["'%s'"%each for each in funds_universe]
+    funds_universe = ",".join(funds_universe)
+    return pd.read_sql(SQL_GET_FUNDS_NET_VALUE.format(funds_universe = funds_universe,
+                                                      start_date = start_date,
+                                                      end_date = end_date),
+        engine_xiaoyi)
+        
+def get_fund_manager(fund_universe,trade_date):
+    '''
+    获取基金对应基金在某日经理列表.
+    '''
+    fund_universe_adj = ["'%s'"%each for each in fund_universe]
+    funds = ','.join(fund_universe_adj)
+    return pd.read_sql(SQL_GET_FUND_MANAGER.format(fund_universe = funds,
+                                                   trade_date = trade_date),engine_xiaoyi)
+def get_manager_fund(managers_ids,trade_date):
+    '''
+    根据基金经理id获取某日其管理的基金列表。
+    
+    Parameters
+    ------------
+    managers_ids
+        list
+    trade_date
+        YYYYMMDD
+    '''
+    managers_ids = ["'%s'"%each for each in managers_ids]
+    managers_ids = ",".join(managers_ids)
+    return pd.read_sql(SQL_GET_MANAGER_FUND.format(managers_ids = managers_ids,
+                                                   trade_date = trade_date),
+        engine_xiaoyi)
+        
 def get_funds_daily_ret(fund_universe,start_date,end_date):
     '''
     获取基金池基金指定时间区间内的日收益率。
@@ -335,7 +361,14 @@ def get_funds_daily_ret(fund_universe,start_date,end_date):
         return pd.read_sql(SQL_GET_ALL_FUNDS_DAILY_RET.format(start_date = start_date,
                                                           end_date = end_date),
             engine_xiaoyi)
+#%% 宏观
+def get_risk_free_rate():
+    '''
+    获取无风险收益率。此处无风险收益率采取个人一年期定期存款利率。
+    '''
+    return pd.read_sql(SQL_GET_RISK_FREE_RATE,engine_wind)
 
+        
 #%% 通用数据获取
 def get_data(sql_statement,db_name):
     '''
@@ -424,4 +457,6 @@ if __name__ == '__main__':
 #    data1 = get_stock_daily_data('20180901','20180905',['000860'])
 #    data2 = get_stock_min_data_close('20180901','20180905',['000860'],2018)
 #    data3 = get_stock_features('20180101','20180201',['000860'])
-    data4 = get_funds_daily_ret(['502056'],'20180101','20181231')
+#    data4 = get_funds_daily_ret(['502056'],'20180101','20181231')
+#    data = get_index_daily('000300.SH','20150101','20170101')
+    risk_free = get_risk_free_rate()
