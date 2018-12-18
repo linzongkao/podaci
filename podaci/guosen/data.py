@@ -56,6 +56,13 @@ def get_trade_calendar(start_date = '20170101',
                        end_date = dt.date.today().strftime('%Y%m%d')):
     '''
     获取交易日历。
+    
+    Parameters
+    -----------
+    start_date
+        开始日期,默认20170101
+    end_date
+        结束日期,默认今日
     '''
     return pd.read_sql(SQL_GET_TRADE_CALENDAR.format(start_date = start_date,
                                                      end_date = end_date),
@@ -449,8 +456,8 @@ if __name__ == '__main__':
 #    data = get_fund_score()
 #    data = get_fund_net_value('210013','20180101','20180201')
 #    data = get_trade_calendar()
-#    data = get_funds_net_value([u'530003', u'200010', u'002152', u'960028', u'000294'],
-#                               start_date,end_date)
+    data = get_funds_net_value([u'530003', u'200010', u'002152', u'960028', u'000294'],
+                               start_date,end_date)
 #    data = get_fund_manager(['519606','001878'],'20171231')
 #    data = get_manager_fund(['{AFFBFC95-FA1E-4243-8CF3-D6F7F69B5528}'],'20171231')
 #    data = get_stock_basic()
@@ -459,4 +466,5 @@ if __name__ == '__main__':
 #    data3 = get_stock_features('20180101','20180201',['000860'])
 #    data4 = get_funds_daily_ret(['502056'],'20180101','20181231')
 #    data = get_index_daily('000300.SH','20150101','20170101')
-    risk_free = get_risk_free_rate()
+#    risk_free = get_risk_free_rate()
+    
