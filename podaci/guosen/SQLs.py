@@ -153,6 +153,17 @@ WHERE trade_date >= '{start_date}'
 AND trade_date <= '{end_date}'
 AND stock_code IN ({stock_universe})
 '''
+
+SQL_GET_STOCK_ADJFACTOR = '''
+SELECT CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 ),112) as trade_date
+,[stockcode] as stock_code
+,[value] as factor
+FROM [BasicData].[dbo].[Yi_RecoveredGene]
+WHERE stockcode = '{stock_code}'
+AND CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 ),112) <= '{end_date}'
+AND CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962 ),112) >= '{start_date}'
+'''
+
 #%% 指数
 SQL_GET_SW_INDEX_CLOSE = '''
 SELECT CONVERT(VARCHAR(32),CONVERT(DATETIME,[numtime] - 693962),112)  as trade_date

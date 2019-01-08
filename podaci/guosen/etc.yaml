@@ -47,3 +47,13 @@ xiaoyi40:
         financial_xiaoyi
     passwd:
         fs95536!    
+        
+guosen:
+    server:
+        172.24.182.29
+    db:
+        GuosenIDC
+    user:
+        fsb
+    passwd:
+        fsb

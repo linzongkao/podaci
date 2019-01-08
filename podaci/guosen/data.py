@@ -30,7 +30,8 @@ from SQLs import (SQL_GET_SW_INDEX_CLOSE,
                   SQL_GET_FUNDS_DAILY_RET,
                   SQL_GET_ALL_FUNDS_DAILY_RET,
                   SQL_GET_INDEX_DAILY,
-                  SQL_GET_RISK_FREE_RATE)
+                  SQL_GET_RISK_FREE_RATE,
+                  SQL_GET_STOCK_ADJFACTOR)
 from consts import SW_INDUSTRY_FIRST_CODE
 
 engine_ld_obj = DatabaseEngine('ld')
@@ -50,6 +51,10 @@ session_gb = engine_gb_obj.get_session()
 engine_xiaoyi40_obj = DatabaseEngine('xiaoyi40')
 engine_xiaoyi40 = engine_xiaoyi40_obj.get_engine()
 session_xiaoyi40 = engine_xiaoyi40_obj.get_session()
+
+engine_guosen_obj = DatabaseEngine('guosen')
+engine_guosen = engine_guosen_obj.get_engine()
+session_guosen = engine_guosen_obj.get_session()
 
 #%% 基础
 def get_trade_calendar(start_date = '20170101',
@@ -138,8 +143,8 @@ def get_stock_daily_data(start_date,end_date,stock_universe = ''):
     end_date
         结束日期
     stock_universe
-        list,默认''取全部股票
-        
+        list,默认''取全部股票  
+    
     Returns
     --------
     DataFrame
@@ -177,6 +182,47 @@ def get_stock_features(start_date,end_date,stock_universe = ''):
                                                      stock_universe = stock_universe),
         engine_gb)
     
+def get_stock_adjfactor(stock_code,start_date,end_date):
+    '''
+    获取股票复权因子。
+    
+    Parameters
+    -----------
+    stock_code
+        股票代码
+    start_date
+        开始日期
+    end_date
+        结束日期
+    '''
+    return pd.read_sql(SQL_GET_STOCK_ADJFACTOR.format(stock_code = stock_code,
+                                                      start_date = start_date,
+                                                      end_date = end_date),
+    engine_ld)
+    
+def get_stock_daily_backward_adj(stock_code,start_date,end_date):
+    '''
+    获取股票后复权价格。
+    
+    Parameters
+    -----------
+    stock_code
+        股票代码
+    start_date
+        开始日期
+    end_date
+        结束日期
+    '''
+    stock_daily = get_stock_daily_data(start_date,end_date,stock_universe = [stock_code])
+    stock_adjfactor = get_stock_adjfactor(stock_code,start_date,end_date)
+    comb = pd.merge(stock_daily,stock_adjfactor,left_on=['trade_date','stock_code'],
+                    right_on = ['trade_date','stock_code'])
+    comb = comb.sort_values('trade_date',ascending = True).set_index('trade_date')
+    comb = comb.drop('stock_code',axis = 1)
+    comb.loc[:,'adj_close_price'] = comb['close_price'] * comb['factor']
+    return comb
+    
+
 #%% 指数
 def get_index_daily(index_code,start_date,end_date):
     '''
@@ -368,6 +414,11 @@ def get_funds_daily_ret(fund_universe,start_date,end_date):
         return pd.read_sql(SQL_GET_ALL_FUNDS_DAILY_RET.format(start_date = start_date,
                                                           end_date = end_date),
             engine_xiaoyi)
+        
+#%% 新闻
+def get_news():
+    pass
+
 #%% 宏观
 def get_risk_free_rate():
     '''
@@ -394,6 +445,8 @@ def get_data(sql_statement,db_name):
         engine = engine_xiaoyi
     elif db_name == 'xiaoyi40':
         engine = engine_xiaoyi40
+    elif db_name == 'guosen':
+        engine = engine_guosen    
     return pd.read_sql(sql_statement,engine)
 
 #%% 数据写入
@@ -446,7 +499,7 @@ def execute_session(sql_statement,db_name):
     elif db_name == 'xiaoyi40':
         session_xiaoyi40.execute(sql_statement)
         session_xiaoyi40.commit()
-        
+    
 if __name__ == '__main__':
 #    data = get_sw_industry_index('20180801','20180820')
 #    data = get_fund_hold_stock_top10('20180801')
@@ -456,8 +509,8 @@ if __name__ == '__main__':
 #    data = get_fund_score()
 #    data = get_fund_net_value('210013','20180101','20180201')
 #    data = get_trade_calendar()
-    data = get_funds_net_value([u'530003', u'200010', u'002152', u'960028', u'000294'],
-                               start_date,end_date)
+#    data = get_funds_net_value([u'530003', u'200010', u'002152', u'960028', u'000294'],
+#                               start_date,end_date)
 #    data = get_fund_manager(['519606','001878'],'20171231')
 #    data = get_manager_fund(['{AFFBFC95-FA1E-4243-8CF3-D6F7F69B5528}'],'20171231')
 #    data = get_stock_basic()
@@ -467,4 +520,6 @@ if __name__ == '__main__':
 #    data4 = get_funds_daily_ret(['502056'],'20180101','20181231')
 #    data = get_index_daily('000300.SH','20150101','20170101')
 #    risk_free = get_risk_free_rate()
+#    adj_factor = get_stock_adjfactor('600887','20100101','20181231')
+    data = get_stock_daily_backward_adj('600887','20100101','20181231')
     
