@@ -437,7 +437,7 @@ def get_data(sql_statement,db_name):
     sql_statement
         sql语句
     db_name
-        数据库名,支持gb,xiaoyi,guosen    
+        写入数据库名,支持gb,xiaoyi    
     '''
     if db_name == 'gb':
         engine = engine_gb
